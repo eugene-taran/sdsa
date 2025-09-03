@@ -58,12 +58,24 @@ SDSA is a mobile application that provides guided learning journeys for software
 
 ### Not in MVP
 - Voice input
-- MCP integration
+- MCP integration (will be desktop-only feature later)
 - Desktop app
-- Cloud model integration
+- Cloud model integration (deferred to paid tier)
 - User accounts/sync
 - Analytics
 - Multiple model selection
+
+### Key User Requirements
+- **No depth limitations:** Knowledge blocks can go as deep as needed
+- **Backtracking:** Users can go back and change previous answers
+- **Block linking:** Future feature to merge multiple blocks into same context
+- **Model download:** Download on first launch, not bundled with app
+- **Offline caching:** Cache all knowledge blocks and resources locally
+- **Session persistence:** Remember user's journey between app sessions
+- **Community contributions:** Direct PRs to public knowledge repo
+- **No content gating:** All knowledge blocks available to free tier
+- **Free tier:** Full functionality with on-device models
+- **Paid tier:** Better model quality (Claude Opus, GPT-4) for premium advice
 
 ## Knowledge Block Structure
 
@@ -94,31 +106,130 @@ context_variables:
   - app_type
 ```
 
-## Development Phases
+## Implementation Plan
 
-### Phase 1: Foundation (Current)
-- [ ] Expo + Rock setup
-- [ ] Basic navigation structure
-- [ ] Knowledge block loader from GitHub
-- [ ] Decision tree renderer
+### Phase 1: Project Setup & Foundation
+1. **Initialize Expo with TypeScript**
+   - Create new Expo project with TypeScript template
+   - Configure for development builds (not Expo Go)
+   - Set up EAS Build configuration
 
-### Phase 2: Intelligence
-- [ ] State management for user journey
-- [ ] On-device model integration with Rock
-- [ ] Context passing to chat
-- [ ] Basic chat UI
+2. **Install Core Dependencies**
+   - React Navigation for screen navigation
+   - React Native YAML for parsing knowledge blocks
+   - React Native Markdown Display for rendering resources
+   - Zustand for state management (lightweight alternative to Redux)
+   - React Native Async Storage for persistence
 
-### Phase 3: Polish
+3. **Setup Rock for On-Device AI**
+   - Install @callstack/rock package
+   - Configure model download manager
+   - Set up model storage directory
+
+### Phase 2: Core Features Implementation
+
+4. **Create Navigation Structure**
+   - Home screen (topic selector)
+   - Knowledge block journey screen
+   - Resource viewer screen
+   - Chat screen (context-aware)
+
+5. **Implement Knowledge Block System**
+   - Knowledge block fetcher from GitHub
+   - YAML parser for block structure
+   - Decision tree renderer component
+   - Journey state manager (track user's path)
+   - Backtrack functionality
+
+6. **Build Interactive Questionnaire**
+   - Dynamic question components
+   - Answer selection UI
+   - Progress indicator
+   - Context accumulator
+
+7. **Create Resource Display**
+   - Markdown renderer with syntax highlighting
+   - Code block component
+   - Resource caching for offline use
+
+8. **Integrate Rock AI**
+   - Model download on first launch
+   - Model initialization service
+   - Context-aware prompt builder
+   - Chat interface with journey context
+
+### Phase 3: Data & Persistence
+
+9. **Implement Caching**
+   - Cache knowledge blocks locally
+   - Cache resources for offline access
+   - Persist user journey between sessions
+
+10. **State Management**
+    - User journey state
+    - Downloaded models state
+    - Cached content management
+
+### Phase 4: Polish & MVP Release
 - [ ] UI/UX refinement
-- [ ] Offline support
+- [ ] Offline support verification
 - [ ] Error handling
 - [ ] Performance optimization
+- [ ] App Store preparation
 
-### Phase 4: Monetization (Post-MVP)
+### Phase 5: Monetization (Post-MVP)
 - [ ] RevenueCat integration
-- [ ] Cloud model routing
+- [ ] Cloud model routing (Claude, GPT-4)
 - [ ] Firebase backend
-- [ ] User accounts
+- [ ] User accounts and sync
+
+## Project Structure
+
+```
+sdsa/
+├── app.json                 # Expo configuration
+├── eas.json                # EAS Build configuration
+├── package.json
+├── tsconfig.json
+├── babel.config.js
+├── metro.config.js         # For Rock native modules
+├── App.tsx                 # App entry point
+├── src/
+│   ├── screens/
+│   │   ├── HomeScreen.tsx         # Topic selection
+│   │   ├── JourneyScreen.tsx      # Knowledge block journey
+│   │   ├── ResourceScreen.tsx     # Resource viewer
+│   │   └── ChatScreen.tsx         # Context-aware chat
+│   ├── components/
+│   │   ├── KnowledgeBlock/
+│   │   │   ├── QuestionCard.tsx
+│   │   │   ├── AnswerOptions.tsx
+│   │   │   └── ProgressBar.tsx
+│   │   ├── ResourceViewer/
+│   │   │   ├── MarkdownRenderer.tsx
+│   │   │   └── CodeBlock.tsx
+│   │   └── Chat/
+│   │       ├── MessageList.tsx
+│   │       └── InputBar.tsx
+│   ├── services/
+│   │   ├── knowledgeService.ts    # Fetch from GitHub
+│   │   ├── modelService.ts        # Rock AI management
+│   │   ├── cacheService.ts        # Offline storage
+│   │   └── journeyService.ts      # Journey state management
+│   ├── store/
+│   │   ├── journeyStore.ts        # Zustand store for journey
+│   │   └── appStore.ts           # General app state
+│   ├── types/
+│   │   ├── knowledge.ts           # Knowledge block types
+│   │   └── journey.ts            # Journey state types
+│   └── utils/
+│       ├── yamlParser.ts
+│       └── contextBuilder.ts     # Build context for AI
+├── assets/
+│   ├── fonts/
+│   └── images/
+└── models/                       # Downloaded AI models (gitignored)
+```
 
 ## Key Implementation Notes
 
