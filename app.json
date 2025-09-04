@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "SDSA",
+    "slug": "sdsa",
+    "version": "1.0.0",
+    "description": "Software Development Smart Assist - Guided learning journeys for developers",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "sdsa",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "team.sdsa.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "team.sdsa.app",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "title": "SDSA - Software Development Smart Assist",
+      "description": "Guided learning journeys for developers with on-device AI assistance",
+      "themeColor": "#000000",
+      "backgroundColor": "#ffffff"
+    },
+    "plugins": []
+  }
+}

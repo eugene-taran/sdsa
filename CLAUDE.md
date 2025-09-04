@@ -1,9 +1,11 @@
 # CLAUDE.md - SDSA (Software Development Smart Assist)
 
 ## Project Overview
+
 SDSA is a mobile application that provides guided learning journeys for software developers through interactive knowledge blocks. Unlike traditional coding assistants, SDSA walks users through structured decision trees to understand their specific context before providing personalized assistance.
 
 **Core Flow:**
+
 1. User selects a learning topic (e.g., "E2E Testing")
 2. Interactive questionnaire builds context through decision trees
 3. Progressive refinement based on user's specific situation
@@ -11,6 +13,7 @@ SDSA is a mobile application that provides guided learning journeys for software
 5. Contextualized chat with full journey awareness
 
 ## Repository Structure
+
 - **This repo (private):** `https://github.com/eugene-taran/sdsa` - Application source code
 - **Knowledge repo (public):** `https://github.com/eugene-taran/sdsa.team` - Knowledge blocks and learning paths
 - **Domain:** `sdsa.team`
@@ -18,6 +21,7 @@ SDSA is a mobile application that provides guided learning journeys for software
 ## Technical Stack
 
 ### Core Technologies
+
 - **Framework:** React Native with TypeScript
 - **Platform:** Expo (with development builds, not Expo Go)
 - **On-device AI:** Rock (CallStack's React Native AI inference)
@@ -26,37 +30,40 @@ SDSA is a mobile application that provides guided learning journeys for software
 - **Analytics:** None for MVP
 
 ### Model Strategy
+
 - **Free tier:** On-device inference using Rock
-    - Primary model: Phi-3-mini or Llama 3.2 1B
-    - Runs completely offline
-    - Privacy-preserving
+  - Primary model: Phi-3-mini or Llama 3.2 1B
+  - Runs completely offline
+  - Privacy-preserving
 - **Paid tier (future):** Cloud models (Claude, GPT-4, etc.)
-    - Implementation deferred post-MVP
+  - Implementation deferred post-MVP
 
 ## MVP Scope
 
 ### Must Have
+
 1. **Knowledge block browser/navigator**
-    - Load knowledge blocks from public repo
-    - Render decision trees and paths
-    - Track user's journey through blocks
+   - Load knowledge blocks from public repo
+   - Render decision trees and paths
+   - Track user's journey through blocks
 
 2. **Interactive questionnaire system**
-    - Dynamic questions based on previous answers
-    - State management for user's path
-    - Progress indication
+   - Dynamic questions based on previous answers
+   - State management for user's path
+   - Progress indication
 
 3. **Contextual resource display**
-    - Show relevant resources based on path
-    - Support markdown rendering
-    - Code syntax highlighting
+   - Show relevant resources based on path
+   - Support markdown rendering
+   - Code syntax highlighting
 
 4. **Context-aware chat**
-    - Appears after knowledge block journey
-    - Has full context of user's selections
-    - Powered by on-device model
+   - Appears after knowledge block journey
+   - Has full context of user's selections
+   - Powered by on-device model
 
 ### Not in MVP
+
 - Voice input
 - MCP integration (will be desktop-only feature later)
 - Desktop app
@@ -66,6 +73,7 @@ SDSA is a mobile application that provides guided learning journeys for software
 - Multiple model selection
 
 ### Key User Requirements
+
 - **No depth limitations:** Knowledge blocks can go as deep as needed
 - **Backtracking:** Users can go back and change previous answers
 - **Block linking:** Future feature to merge multiple blocks into same context
@@ -80,18 +88,19 @@ SDSA is a mobile application that provides guided learning journeys for software
 ## Knowledge Block Structure
 
 Knowledge blocks will live in the public repo with structure like:
+
 ```yaml
-id: "e2e-testing"
-title: "End-to-End Testing Setup"
-initial_question: "Do you have an existing test system?"
+id: 'e2e-testing'
+title: 'End-to-End Testing Setup'
+initial_question: 'Do you have an existing test system?'
 paths:
   yes:
-    question: "Which framework are you using?"
+    question: 'Which framework are you using?'
     options:
       - cypress
       - playwright
       - selenium
-    next: "e2e-framework-specific"
+    next: 'e2e-framework-specific'
   no:
     question: "What's your primary application type?"
     options:
@@ -99,7 +108,7 @@ paths:
       - mobile
       - desktop
     resources:
-      - "getting-started-with-e2e.md"
+      - 'getting-started-with-e2e.md'
 context_variables:
   - has_test_system
   - framework_choice
@@ -109,6 +118,7 @@ context_variables:
 ## Implementation Plan
 
 ### Phase 1: Project Setup & Foundation
+
 1. **Initialize Expo with TypeScript**
    - Create new Expo project with TypeScript template
    - Configure for development builds (not Expo Go)
@@ -171,6 +181,7 @@ context_variables:
     - Cached content management
 
 ### Phase 4: Polish & MVP Release
+
 - [ ] UI/UX refinement
 - [ ] Offline support verification
 - [ ] Error handling
@@ -178,6 +189,7 @@ context_variables:
 - [ ] App Store preparation
 
 ### Phase 5: Monetization (Post-MVP)
+
 - [ ] RevenueCat integration
 - [ ] Cloud model routing (Claude, GPT-4)
 - [ ] Firebase backend
@@ -234,13 +246,14 @@ sdsa/
 ## Key Implementation Notes
 
 ### Rock Setup
+
 ```typescript
 import { LLM } from '@callstack/rock';
 
 const model = new LLM({
   model: 'phi-3-mini.onnx', // or llama-3.2-1b.onnx
   maxTokens: 1024,
-  temperature: 0.7
+  temperature: 0.7,
 });
 
 // Include user's journey context
@@ -254,6 +267,7 @@ const response = await model.generate(`
 ```
 
 ### Knowledge Block Fetching
+
 ```typescript
 // Fetch from public repo
 const KNOWLEDGE_BASE_URL = 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main';
@@ -265,7 +279,9 @@ async function fetchKnowledgeBlock(blockId: string) {
 ```
 
 ### Development Build Setup
+
 Since Rock requires native modules:
+
 ```bash
 # Install EAS CLI
 npm install -g eas-cli
@@ -281,22 +297,22 @@ eas build --platform android --profile development
 ## Architecture Decisions
 
 1. **Why Rock over alternatives:**
-    - Simplified API for on-device inference
-    - Handles memory management automatically
-    - Supports multiple model formats
-    - Maintained by CallStack (React Native experts)
+   - Simplified API for on-device inference
+   - Handles memory management automatically
+   - Supports multiple model formats
+   - Maintained by CallStack (React Native experts)
 
 2. **Why knowledge blocks before chat:**
-    - Builds context progressively
-    - More valuable than generic Q&A
-    - Guides users to relevant solutions
-    - Chat becomes personalized to their specific situation
+   - Builds context progressively
+   - More valuable than generic Q&A
+   - Guides users to relevant solutions
+   - Chat becomes personalized to their specific situation
 
 3. **Why public knowledge repo:**
-    - Community can contribute learning paths
-    - Transparent learning content
-    - Builds trust and community
-    - Separates content from application logic
+   - Community can contribute learning paths
+   - Transparent learning content
+   - Builds trust and community
+   - Separates content from application logic
 
 ## Quick Start Commands
 
@@ -318,8 +334,10 @@ npx expo start --dev-client
 ```
 
 ## Current Focus
+
 **BUILD THE KNOWLEDGE BLOCK NAVIGATION FIRST**
 The chat is secondary. The value is in the guided journey through knowledge blocks that builds context. Focus on:
+
 1. Loading and parsing knowledge blocks
 2. Rendering decision trees
 3. Tracking user path
@@ -328,6 +346,7 @@ The chat is secondary. The value is in the guided journey through knowledge bloc
 Chat integration comes after the journey system works.
 
 ## Future Expansion (Not MVP)
+
 - Desktop app with MCP integration for development tools
 - Voice input for hands-free operation
 - Multiple AI model selection
@@ -335,6 +354,82 @@ Chat integration comes after the journey system works.
 - Integration with development tools
 - Advanced analytics on learning paths
 
+## Current Implementation Status
+
+### ✅ Completed - Phase 1 & 2
+
+- Expo project initialized with TypeScript
+- Multi-platform support (iOS/Android/Web)
+- Navigation setup with React Navigation
+- Core dependencies installed
+- Complete project folder structure created
+- All main screens implemented:
+  - HomeScreen - Topic selection
+  - JourneyScreen - Interactive questionnaire with completion flow
+  - ResourceScreen - Markdown resource viewer
+  - ChatScreen - Context-aware AI chat
+- Services implemented:
+  - KnowledgeService - Fetches blocks from GitHub with mock fallback
+  - ModelService - Mock AI service ready for Rock integration
+  - CacheService - Complete offline caching with AsyncStorage
+- State management with Zustand
+- Journey persistence and context tracking
+- EAS Build configuration
+- Comprehensive README with setup instructions
+
+### 🚧 Waiting for External Dependencies
+
+- **Rock Integration**: Package not yet publicly available from CallStack
+- **Knowledge Repository**: Waiting for content at github.com/eugene-taran/sdsa.team
+
+### 📝 Next Steps for Production
+
+1. Replace mock ModelService with actual Rock implementation when available
+2. Create content in the public knowledge repository
+3. Test on physical devices with development builds
+4. Implement model download manager
+5. Add error handling and recovery flows
+6. UI/UX polish and animations
+
+## Running the Project
+
+### Prerequisites-free Setup
+
+The project is designed to work on clean CI environments without any global dependencies:
+
+- **Node Version**: Managed via `.nvmrc` and `.node-version`
+- **Package Manager**: Yarn for consistent dependency management
+- **Scripts**: All commands work without global tool requirements
+
+### Quick Start
+
+```bash
+# Verify setup
+yarn verify
+
+# Install dependencies (CI-compatible)
+yarn install --frozen-lockfile
+
+# Start development
+yarn start
+```
+
+### Platform Requirements
+
+- **iOS Development**: macOS with Xcode (for simulator)
+- **Android Development**: Android Studio with emulator
+- **Web Development**: Any OS with modern browser
+- **Device Testing**: Expo Go app on iOS/Android device
+
+### Available Scripts
+
+- `yarn install:ci` - CI-compatible installation (frozen lockfile)
+- `yarn install:dev` - Development installation
+- `yarn verify` - Verify environment setup
+- `yarn type-check` - TypeScript validation
+- `yarn clean` - Remove all generated files
+
 ---
-*Last Updated: September 2025*
-*MVP Target: Functional prototype with knowledge block navigation and basic chat*
+
+_Last Updated: September 3, 2025_
+_MVP Target: Functional prototype with knowledge block navigation and basic chat_
