@@ -54,12 +54,16 @@ SDSA is a mobile application that provides guided learning journeys for software
 
 3. **Contextual resource display**
    - Show relevant resources based on path
-   - Support markdown rendering
+   - Resources accumulate as user progresses through tree
+   - Support markdown rendering with author attribution
    - Code syntax highlighting
+   - Resources loaded from same sources as knowledge blocks
 
 4. **Context-aware chat**
    - Appears after knowledge block journey
-   - Has full context of user's selections
+   - Has full context of user's selections and resources shown
+   - AI knows which resources user has access to
+   - Can reference specific guides in responses
    - Powered by on-device model
 
 ### Not in MVP
@@ -80,7 +84,7 @@ SDSA is a mobile application that provides guided learning journeys for software
 - **Model download:** Download on first launch, not bundled with app
 - **Offline caching:** Cache all knowledge blocks and resources locally
 - **Session persistence:** Remember user's journey between app sessions
-- **Community contributions:** Direct PRs to public knowledge repo
+- **Community contributions:** Direct PRs to public knowledge repo with author attribution
 - **No content gating:** All knowledge blocks available to free tier
 - **Free tier:** Full functionality with on-device models
 - **Paid tier:** Better model quality (Claude Opus, GPT-4) for premium advice
@@ -100,6 +104,8 @@ paths:
       - cypress
       - playwright
       - selenium
+    resources:
+      - 'framework-comparison.md'
     next: 'e2e-framework-specific'
   no:
     question: "What's your primary application type?"
@@ -113,7 +119,13 @@ context_variables:
   - has_test_system
   - framework_choice
   - app_type
+metadata:
+  author: 'eugene-taran'  # GitHub username from authors.json
+  version: '1.0.0'
+  created: '2024-12-15'
 ```
+
+Resources are markdown files stored in `knowledge/resources/` that provide detailed guides. They accumulate as users traverse the decision tree and are available in the chat context.
 
 ## Implementation Plan
 
@@ -161,6 +173,8 @@ context_variables:
    - Markdown renderer with syntax highlighting
    - Code block component
    - Resource caching for offline use
+   - Author attribution display from authors.json
+   - Resource accumulation from journey path
 
 8. **Integrate Rock AI**
    - Model download on first launch
@@ -256,11 +270,13 @@ const model = new LLM({
   temperature: 0.7,
 });
 
-// Include user's journey context
+// Include user's journey context with resources
 const context = getUserJourneyContext(); // All selections from knowledge blocks
+const resources = getAccumulatedResources(); // Resources shown during journey
 const response = await model.generate(`
   Context: User went through ${context.topic} setup.
   Their choices: ${JSON.stringify(context.selections)}
+  Resources provided: ${resources.map(r => r.title).join(', ')}
   
   User question: ${userInput}
 `);
@@ -380,7 +396,7 @@ Chat integration comes after the journey system works.
 ### 🚧 Waiting for External Dependencies
 
 - **Rock Integration**: Package not yet publicly available from CallStack
-- **Knowledge Repository**: Waiting for content at github.com/eugene-taran/sdsa.team
+- **Knowledge Repository**: ✅ Initial content now available at github.com/eugene-taran/sdsa.team with release system
 
 ### 📝 Next Steps for Production
 
@@ -431,5 +447,6 @@ yarn start
 
 ---
 
-_Last Updated: September 3, 2025_
+_Last Updated: December 15, 2024_
 _MVP Target: Functional prototype with knowledge block navigation and basic chat_
+_Knowledge Repository: Active at github.com/eugene-taran/sdsa.team with automated releases_
