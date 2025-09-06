@@ -6,6 +6,7 @@ interface JourneyStore extends JourneyState {
   addAnswer: (question: string, answer: string) => void;
   goBack: () => void;
   reset: () => void;
+  clearAnswers: () => void;
   setContext: (key: string, value: ContextValue) => void;
   addResource: (resource: string) => void;
 }
@@ -42,6 +43,13 @@ export const useJourneyStore = create<JourneyStore>((set) => ({
     }),
 
   reset: () => set(initialState),
+
+  clearAnswers: () =>
+    set((state) => ({
+      path: [],
+      answers: {},
+      resources: [],
+    })),
 
   setContext: (key, value) =>
     set((state) => ({

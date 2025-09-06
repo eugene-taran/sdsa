@@ -6,7 +6,7 @@ import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
-import { JourneyScreen } from './src/screens/JourneyScreen';
+import { QuestionnaireScreen } from './src/screens/QuestionnaireScreen';
 import { ResourceScreen } from './src/screens/ResourceScreen';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { Colors } from './src/utils/colors';
@@ -49,14 +49,14 @@ export default function App() {
         />
         <Stack.Screen
           name="Questionnaire"
-          component={JourneyScreen}
-          options={({ route }: { route: { params?: { questionnaire?: { title?: string } } } }) => ({
-            title: route.params?.questionnaire?.title || 'Questionnaire',
+          component={QuestionnaireScreen}
+          options={{
+            title: 'Questionnaire',
             headerStyle: {
               backgroundColor: colors.card,
             },
             headerTintColor: colors.text,
-          })}
+          }}
         />
         <Stack.Screen
           name="Resource"

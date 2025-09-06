@@ -16,7 +16,7 @@ import { useThemeColors } from '../utils/colors';
 
 type RootStackParamList = {
   Category: { category: Category };
-  Questionnaire: { questionnaire: Questionnaire; category: Category };
+  Questionnaire: { categoryPath: string; questionnaireId: string };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Category'>;
@@ -48,7 +48,10 @@ export const CategoryScreen = () => {
   };
 
   const handleQuestionnairePress = (questionnaire: Questionnaire) => {
-    navigation.navigate('Questionnaire', { questionnaire, category });
+    navigation.navigate('Questionnaire', { 
+      categoryPath: category.path, 
+      questionnaireId: questionnaire.id 
+    });
   };
 
   const renderQuestionnaire = ({ item }: { item: Questionnaire }) => (
