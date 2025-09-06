@@ -97,7 +97,7 @@ export const HomeScreen = () => {
           Software Development Smart Assist
         </Text>
         <Text style={[styles.tagline, { color: colors.text }]}>
-          🤖 Powered by Gemini AI
+          🤖 Powered by Gemini AI ✨
         </Text>
       </View>
 

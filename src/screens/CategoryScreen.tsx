@@ -32,6 +32,7 @@ export const CategoryScreen = () => {
 
   useEffect(() => {
     loadQuestionnaires();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category.id]);
 
   const loadQuestionnaires = async () => {

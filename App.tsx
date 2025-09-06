@@ -39,7 +39,7 @@ export default function App() {
         <Stack.Screen
           name="Category"
           component={CategoryScreen}
-          options={({ route }: any) => ({
+          options={({ route }: { route: { params?: { category?: { name?: string } } } }) => ({
             title: route.params?.category?.name || 'Category',
             headerStyle: {
               backgroundColor: colors.card,
@@ -50,7 +50,7 @@ export default function App() {
         <Stack.Screen
           name="Questionnaire"
           component={JourneyScreen}
-          options={({ route }: any) => ({
+          options={({ route }: { route: { params?: { questionnaire?: { title?: string } } } }) => ({
             title: route.params?.questionnaire?.title || 'Questionnaire',
             headerStyle: {
               backgroundColor: colors.card,

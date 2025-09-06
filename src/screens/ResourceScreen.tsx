@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import Markdown from 'react-native-markdown-display';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { knowledgeService } from '../services/knowledgeService';
 
-interface ResourceScreenProps {
-  route: {
-    params: {
-      resourcePath: string;
-    };
-  };
-}
+type RootStackParamList = {
+  Resource: { resourcePath: string };
+};
 
-export const ResourceScreen = ({ route }: ResourceScreenProps) => {
+type ResourceRouteProp = RouteProp<RootStackParamList, 'Resource'>;
+
+export const ResourceScreen = () => {
+  const route = useRoute<ResourceRouteProp>();
   const { resourcePath } = route.params;
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(true);

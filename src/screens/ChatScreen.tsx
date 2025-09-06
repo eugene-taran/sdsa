@@ -61,7 +61,6 @@ export const ChatScreen = () => {
     if (hasShownWelcome) return;
     
     try {
-      const journeyContext = buildJourneyContext();
       const questionnaireContext = buildQuestionnaireContext();
       
       // Initialize chat with context and get welcome joke
@@ -90,7 +89,7 @@ export const ChatScreen = () => {
     }
   };
 
-  const buildJourneyContext = () => {
+  const _buildJourneyContext = () => {
     // Build a summary of the user's journey
     const topic = path[0] || 'general development';
     const choices = Object.entries(answers)

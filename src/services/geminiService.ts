@@ -17,14 +17,14 @@ interface ChatMessage {
 interface QuestionnaireContext {
   title: string;
   description: string;
-  answers: any[];
+  answers: Array<{ question: string; value: string | string[] }>;
   systemPrompt?: string;
 }
 
 class GeminiService {
   private genAI: GoogleGenerativeAI | null = null;
-  private nanoModel: any = null;
-  private flashModel: any = null;
+  private nanoModel: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null;
+  private flashModel: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null;
   private apiKey: string | null = null;
   private chatHistory: ChatMessage[] = [];
 
@@ -50,7 +50,7 @@ class GeminiService {
       model: process.env.EXPO_PUBLIC_GEMINI_FLASH_MODEL || 'gemini-2.5-flash' 
     });
 
-    console.log('Gemini service initialized successfully');
+    // Service initialized successfully
   }
 
   /**
@@ -185,7 +185,7 @@ Please provide a helpful, specific response to the user's latest message.`;
     // Generate welcome joke
     const welcomeJoke = await this.generateWelcomeJoke(
       context.title,
-      context.answers.find((a: any) => a.question?.toLowerCase().includes('experience'))?.value
+      context.answers.find((a) => a.question?.toLowerCase().includes('experience'))?.value as string | undefined
     );
     
     // Add joke as first message in history
@@ -209,7 +209,7 @@ Please provide a helpful, specific response to the user's latest message.`;
     this.nanoModel = null;
     this.flashModel = null;
     this.chatHistory = [];
-    console.log('Gemini service cleaned up');
+    // Service cleaned up
   }
 }
 

@@ -34,7 +34,7 @@ class QuestionnaireService {
           return data.categories;
         }
       } catch (error) {
-        console.log('Remote fetch failed, using local fallback:', error);
+        console.error('Remote fetch failed, using local fallback:', error);
       }
 
       // Fallback to local assets
@@ -83,7 +83,7 @@ class QuestionnaireService {
             questionnaires.push(questionnaire);
           }
         } catch (error) {
-          console.log(`Failed to fetch ${id} remotely, trying local:`, error);
+          console.error(`Failed to fetch ${id} remotely, trying local:`, error);
           
           // Fallback to local assets
           if (this.localFallback) {
@@ -132,7 +132,7 @@ class QuestionnaireService {
           return questionnaire;
         }
       } catch (error) {
-        console.log('Remote fetch failed, using local fallback:', error);
+        console.error('Remote fetch failed, using local fallback:', error);
       }
 
       // Fallback to local assets
@@ -153,7 +153,7 @@ class QuestionnaireService {
   private getLocalQuestionnaire(categoryPath: string, questionnaireId: string): Questionnaire | null {
     try {
       // Dynamic requires don't work well in React Native, so we need to map them
-      const questionnaireMap: Record<string, any> = {
+      const questionnaireMap: Record<string, Questionnaire> = {
         'cicd/cicd-pipeline': require('../../assets/contexts/categories/cicd/cicd-pipeline.json'),
         'e2e/e2e-testing': require('../../assets/contexts/categories/e2e/e2e-testing.json'),
       };
@@ -192,7 +192,7 @@ class QuestionnaireService {
   /**
    * Set cached data
    */
-  private async setCachedData(key: string, data: any): Promise<void> {
+  private async setCachedData<T>(key: string, data: T): Promise<void> {
     try {
       const cacheData = {
         data,
