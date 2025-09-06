@@ -1,16 +1,16 @@
 # SDSA - Software Development Smart Assist
 
-A mobile application that provides guided learning journeys for software developers through interactive knowledge blocks and on-device AI assistance.
+A mobile application that provides guided learning journeys for software developers through interactive questionnaires and on-device AI assistance.
 
 ## Overview
 
-SDSA walks users through structured decision trees to understand their specific context before providing personalized assistance. Unlike traditional coding assistants, it builds context progressively through an interactive questionnaire system.
+SDSA uses context-gathering questionnaires organized in categories to understand users' specific situations before providing personalized AI-powered recommendations. Unlike traditional coding assistants, it builds context through targeted questions before offering guidance.
 
 ## Features
 
-- 🚀 **Interactive Knowledge Blocks**: Navigate through decision trees to build context
+- 🚀 **Interactive Questionnaires**: Answer targeted questions to build context
 - 🤖 **On-Device AI**: Privacy-preserving assistance with offline capabilities
-- 📚 **Community-Driven Content**: Open-source knowledge repository
+- 📚 **Community-Driven Content**: Open-source questionnaire repository
 - 💬 **Contextual Chat**: AI chat that understands your entire learning journey
 - 🔒 **Privacy-First**: Free tier runs entirely on-device
 
@@ -158,15 +158,15 @@ sdsa/
 
 ## Contributing
 
-We welcome contributions! The knowledge blocks are open source and live at:
+We welcome contributions! The questionnaires are open source and live at:
 
 - Repository: https://github.com/eugene-taran/sdsa.team
 - Domain: https://sdsa.team
 
-To contribute knowledge blocks:
+To contribute questionnaires:
 
 1. Fork the sdsa.team repository
-2. Add your knowledge block in YAML format
+2. Add your questionnaire in JSON format to the appropriate category
 3. Submit a PR with your contribution
 
 ## Development Status
@@ -187,7 +187,7 @@ To contribute knowledge blocks:
 #### Phase 1: Core Infrastructure ✅
 
 - [x] Add Rock for on-device AI inference (Mock service ready for Rock integration)
-- [x] Implement knowledge block fetching from GitHub
+- [x] Implement questionnaire fetching from GitHub
 - [x] Add resource viewer with markdown rendering
 
 #### Phase 2: Interactive Features ✅

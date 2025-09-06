@@ -1,51 +1,55 @@
-# Knowledge Content Consumption Strategy
+# Questionnaire Content Consumption Strategy
 
 ## Overview
 
-The SDSA app consumes knowledge tree releases from the `sdsa.team` repository. This document describes how the app fetches, caches, and updates knowledge content.
+The SDSA app consumes questionnaire releases from the `sdsa.team` repository. This document describes how the app fetches, caches, and updates questionnaire content organized in categories.
 
 ## Content Source
 
 ### Remote Repository
 - **Source**: `https://github.com/eugene-taran/sdsa.team`
 - **Releases**: Published automatically when content changes
-- **Manifest URL**: `https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/knowledge/manifest.json`
-- **Bundle URL**: `https://github.com/eugene-taran/sdsa.team/releases/latest/download/knowledge-bundle.tar.gz`
+- **Manifest URL**: `https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/manifest.json`
+- **Categories URL**: `https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories.json`
 
 ## App Integration
 
 ### 1. Bundled Content (Fallback)
 
-The app ships with a snapshot of knowledge content for offline-first functionality:
+The app ships with a snapshot of questionnaire content for offline-first functionality:
 
 ```
 sdsa/
 ├── assets/
-│   └── knowledge/           # Bundled snapshot
-│       ├── manifest.json   # Version info of bundled content
-│       ├── catalog.json    # Topics catalog
-│       ├── blocks/         # Knowledge trees
-│       └── resources/      # Markdown files
+│   └── contexts/              # Bundled snapshot
+│       ├── manifest.json      # Version info of bundled content
+│       ├── categories.json    # Categories metadata
+│       └── categories/        # Questionnaires organized by category
+│           ├── cicd/
+│           │   └── *.json
+│           ├── e2e/
+│           │   └── *.json
+│           └── ...
 ```
 
 ### 2. Update Check Service
 
 ```typescript
-// src/services/KnowledgeUpdateService.ts
-export class KnowledgeUpdateService {
+// src/services/QuestionnaireUpdateService.ts
+export class QuestionnaireUpdateService {
   private static MANIFEST_URL = 
-    'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/knowledge/manifest.json';
+    'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/manifest.json';
   
-  private static BUNDLE_URL = 
-    'https://github.com/eugene-taran/sdsa.team/releases/latest/download/knowledge-bundle.tar.gz';
+  private static CATEGORIES_URL = 
+    'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories.json';
   
   async checkForUpdates(): Promise<UpdateInfo | null> {
     try {
       // Get current version from storage
-      const currentVersion = await AsyncStorage.getItem('knowledge_version');
+      const currentVersion = await AsyncStorage.getItem('questionnaire_version');
       
       // Fetch remote manifest
-      const response = await fetch(KnowledgeUpdateService.MANIFEST_URL);
+      const response = await fetch(QuestionnaireUpdateService.MANIFEST_URL);
       const remoteManifest = await response.json();
       
       // Compare versions
@@ -54,8 +58,8 @@ export class KnowledgeUpdateService {
           hasUpdate: true,
           currentVersion,
           remoteVersion: remoteManifest.version,
-          size: remoteManifest.size,
-          changelog: remoteManifest.changelog
+          checksum: remoteManifest.checksum,
+          timestamp: remoteManifest.timestamp
         };
       }
       
@@ -68,16 +72,16 @@ export class KnowledgeUpdateService {
   
   async downloadUpdate(): Promise<boolean> {
     try {
-      // Download bundle
-      const response = await fetch(KnowledgeUpdateService.BUNDLE_URL);
-      const bundleData = await response.blob();
+      // Download categories metadata
+      const categoriesResponse = await fetch(QuestionnaireUpdateService.CATEGORIES_URL);
+      const categories = await categoriesResponse.json();
       
-      // Extract to file system
-      await this.extractBundle(bundleData);
+      // Download each questionnaire
+      await this.downloadQuestionnaires(categories);
       
       // Update stored version
       const manifest = await this.loadManifest();
-      await AsyncStorage.setItem('knowledge_version', manifest.version);
+      await AsyncStorage.setItem('questionnaire_version', manifest.version);
       
       return true;
     } catch (error) {
@@ -91,8 +95,8 @@ export class KnowledgeUpdateService {
 ### 3. Loading Priority
 
 ```typescript
-// src/services/KnowledgeService.ts
-export class KnowledgeService {
+// src/services/QuestionnaireService.ts
+export class QuestionnaireService {
   private memoryCache: Map<string, any> = new Map();
   private fileSystemCache: Map<string, any> = new Map();
   private bundledContent: Map<string, any> = new Map();
@@ -114,7 +118,7 @@ export class KnowledgeService {
   private async checkForUpdatesInBackground() {
     // Don't block app startup
     setTimeout(async () => {
-      const updateService = new KnowledgeUpdateService();
+      const updateService = new QuestionnaireUpdateService();
       const updateInfo = await updateService.checkForUpdates();
       
       if (updateInfo?.hasUpdate) {
@@ -155,7 +159,7 @@ const updateStrategy = {
 if (updateInfo?.hasUpdate) {
   Alert.alert(
     'Content Update Available',
-    `New knowledge content (${updateInfo.size}) is available. Download now?`,
+    `New questionnaires are available. Download now?`,
     [
       { text: 'Later', style: 'cancel' },
       { text: 'Download', onPress: () => downloadUpdate() }
@@ -182,14 +186,16 @@ if (updateInfo?.hasUpdate) {
 ### File System Structure
 ```
 ${FileSystem.documentDirectory}/
-└── knowledge/
-    ├── .version        # Currently cached version
-    ├── manifest.json   # Downloaded manifest
-    ├── catalog.json    # Topics catalog
-    ├── blocks/
-    │   └── *.yaml     # Knowledge trees
-    └── resources/
-        └── *.md       # Resource files
+└── contexts/
+    ├── .version          # Currently cached version
+    ├── manifest.json     # Downloaded manifest
+    ├── categories.json   # Categories metadata
+    └── categories/
+        ├── cicd/
+        │   └── *.json   # Questionnaires
+        ├── e2e/
+        │   └── *.json
+        └── ...
 ```
 
 ### Cache Management
@@ -274,49 +280,55 @@ async function fetchWithRetry(url: string, maxRetries = 3): Promise<Response> {
 }
 ```
 
-### Corruption Recovery
+### Content Validation
 ```typescript
 async function verifyContent(manifest: Manifest): Promise<boolean> {
-  // Verify checksums if provided
-  for (const [file, checksum of Object.entries(manifest.checksums)]) {
-    const content = await FileSystem.readAsStringAsync(`${CACHE_DIR}/${file}`);
-    const computed = await crypto.digest('SHA-256', content);
-    
-    if (computed !== checksum) {
-      console.error(`Checksum mismatch: ${file}`);
-      return false;
-    }
+  // Verify checksum if provided
+  const expectedChecksum = manifest.checksum;
+  const files = await getAllQuestionnaireFiles();
+  
+  const content = files.map(f => f.content).join('');
+  const computed = await crypto.digest('SHA-256', content);
+  
+  if (computed !== expectedChecksum) {
+    console.error('Checksum mismatch for questionnaire content');
+    return false;
   }
   
   return true;
 }
 ```
 
-## Bundle Extraction
+## Category and Questionnaire Loading
 
-### Handling tar.gz bundles
+### Loading Categories
 ```typescript
-import * as FileSystem from 'expo-file-system';
-import { unzip } from 'react-native-zip-archive';
+async function loadCategories(): Promise<Category[]> {
+  const categoriesPath = `${CONTENT_DIR}/categories.json`;
+  const content = await FileSystem.readAsStringAsync(categoriesPath);
+  return JSON.parse(content);
+}
+```
 
-async function extractBundle(bundlePath: string): Promise<void> {
-  const extractDir = `${FileSystem.cacheDirectory}/knowledge_temp`;
+### Loading Questionnaires by Category
+```typescript
+async function loadQuestionnaires(categoryId: string): Promise<Questionnaire[]> {
+  const category = categories.find(c => c.id === categoryId);
+  if (!category) throw new Error(`Category ${categoryId} not found`);
   
-  try {
-    // For .zip bundles
-    await unzip(bundlePath, extractDir);
-    
-    // Move to permanent location
-    await FileSystem.moveAsync({
-      from: extractDir,
-      to: `${FileSystem.documentDirectory}/knowledge`
-    });
-    
-  } catch (error) {
-    // Cleanup on failure
-    await FileSystem.deleteAsync(extractDir, { idempotent: true });
-    throw error;
-  }
+  const categoryPath = `${CONTENT_DIR}/categories/${category.path}`;
+  const files = await FileSystem.readDirectoryAsync(categoryPath);
+  
+  const questionnaires = await Promise.all(
+    files
+      .filter(f => f.endsWith('.json'))
+      .map(async (file) => {
+        const content = await FileSystem.readAsStringAsync(`${categoryPath}/${file}`);
+        return JSON.parse(content);
+      })
+  );
+  
+  return questionnaires;
 }
 ```
 
@@ -326,30 +338,30 @@ async function extractBundle(bundlePath: string): Promise<void> {
 ```typescript
 // Use local server during development
 const DEV_MANIFEST_URL = __DEV__ 
-  ? 'http://localhost:8080/knowledge/manifest.json'
-  : 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/knowledge/manifest.json';
+  ? 'http://localhost:8080/manifest.json'
+  : 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/manifest.json';
 ```
 
 ### Testing Different Versions
 ```bash
 # Environment variable to force specific version
-FORCE_KNOWLEDGE_VERSION=2024.12.01.0 npm run ios
+FORCE_QUESTIONNAIRE_VERSION=2024.12.01.0 npm run ios
 
 # Clear cache and force re-download
-CLEAR_KNOWLEDGE_CACHE=true npm run android
+CLEAR_QUESTIONNAIRE_CACHE=true npm run android
 ```
 
 ### Mock Updates for Testing
 ```typescript
-// src/services/__mocks__/KnowledgeUpdateService.ts
-export class KnowledgeUpdateService {
+// src/services/__mocks__/QuestionnaireUpdateService.ts
+export class QuestionnaireUpdateService {
   async checkForUpdates(): Promise<UpdateInfo> {
     return {
       hasUpdate: true,
       currentVersion: '2024.12.01.0',
       remoteVersion: '2024.12.15.0',
-      size: '245KB',
-      changelog: 'Test update'
+      checksum: 'abc123',
+      timestamp: new Date().toISOString()
     };
   }
 }
@@ -359,20 +371,20 @@ export class KnowledgeUpdateService {
 
 ### Analytics Events
 ```typescript
-const trackKnowledgeEvents = {
-  UPDATE_CHECK: 'knowledge_update_check',
-  UPDATE_AVAILABLE: 'knowledge_update_available',
-  UPDATE_STARTED: 'knowledge_update_started',
-  UPDATE_COMPLETED: 'knowledge_update_completed',
-  UPDATE_FAILED: 'knowledge_update_failed',
-  CACHE_HIT: 'knowledge_cache_hit',
-  CACHE_MISS: 'knowledge_cache_miss'
+const trackQuestionnaireEvents = {
+  UPDATE_CHECK: 'questionnaire_update_check',
+  UPDATE_AVAILABLE: 'questionnaire_update_available',
+  UPDATE_STARTED: 'questionnaire_update_started',
+  UPDATE_COMPLETED: 'questionnaire_update_completed',
+  UPDATE_FAILED: 'questionnaire_update_failed',
+  CACHE_HIT: 'questionnaire_cache_hit',
+  CACHE_MISS: 'questionnaire_cache_miss'
 };
 
 // Track update success rate
-analytics.track(trackKnowledgeEvents.UPDATE_COMPLETED, {
+analytics.track(trackQuestionnaireEvents.UPDATE_COMPLETED, {
   version: manifest.version,
-  size: manifest.size,
+  categoriesCount: categories.length,
   duration: downloadTime
 });
 ```
@@ -382,7 +394,7 @@ analytics.track(trackKnowledgeEvents.UPDATE_COMPLETED, {
 // Report to Sentry or similar
 Sentry.captureException(error, {
   tags: {
-    component: 'knowledge_update',
+    component: 'questionnaire_update',
     version_from: currentVersion,
     version_to: remoteVersion
   }
@@ -397,7 +409,7 @@ Sentry.captureException(error, {
 - ✅ Manual update trigger
 
 ### Phase 2
-- Differential updates (only changed files)
+- Differential updates (only changed questionnaires)
 - Progressive download with resume
 - Update channels (stable/beta)
 - Offline queue for updates
@@ -412,8 +424,8 @@ Sentry.captureException(error, {
 
 ### App Configuration
 ```typescript
-// src/config/knowledge.config.ts
-export const KnowledgeConfig = {
+// src/config/questionnaire.config.ts
+export const QuestionnaireConfig = {
   // Update checking
   updateCheckInterval: 24 * 60 * 60 * 1000, // 24 hours
   updateCheckOnLaunch: true,
@@ -425,8 +437,8 @@ export const KnowledgeConfig = {
   maxCacheSize: 50 * 1024 * 1024, // 50MB
   
   // URLs
-  manifestUrl: 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/knowledge/manifest.json',
-  bundleUrl: 'https://github.com/eugene-taran/sdsa.team/releases/latest/download/knowledge-bundle.zip',
+  manifestUrl: 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/manifest.json',
+  categoriesUrl: 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories.json',
   
   // Timeouts
   downloadTimeout: 60000, // 60 seconds
@@ -440,7 +452,7 @@ export const KnowledgeConfig = {
 
 ## Summary
 
-The SDSA app consumes knowledge content from the sdsa.team repository through:
+The SDSA app consumes questionnaire content from the sdsa.team repository through:
 
 1. **Bundled fallback** - Always works offline
 2. **Version checking** - Lightweight manifest comparison
@@ -448,4 +460,4 @@ The SDSA app consumes knowledge content from the sdsa.team repository through:
 4. **Smart caching** - File system storage with validation
 5. **Error recovery** - Graceful handling of failures
 
-This ensures users always have access to knowledge content while keeping it fresh when online.
+This ensures users always have access to questionnaires while keeping content fresh when online.

@@ -2,20 +2,20 @@
 
 ## Project Overview
 
-SDSA is a mobile application that provides guided learning journeys for software developers through interactive knowledge blocks. Unlike traditional coding assistants, SDSA walks users through structured decision trees to understand their specific context before providing personalized assistance.
+SDSA is a cross-platform application (iOS, Android, Web) that provides guided learning journeys for software developers through interactive questionnaires organized in categories. Built with React Native for multi-platform support from a single codebase. Unlike traditional coding assistants, SDSA uses context-gathering questionnaires to understand users' specific situations before providing personalized AI-powered recommendations.
 
 **Core Flow:**
 
-1. User selects a learning topic (e.g., "E2E Testing")
-2. Interactive questionnaire builds context through decision trees
-3. Progressive refinement based on user's specific situation
-4. Relevant resources surface based on the path taken
-5. Contextualized chat with full journey awareness
+1. User browses categories and selects a questionnaire (e.g., "E2E Testing")
+2. Interactive questionnaire gathers context through targeted questions
+3. User answers are collected to build understanding of their needs
+4. Answers are processed by LLM to generate personalized recommendations
+5. Context-aware chat provides tailored guidance based on questionnaire responses
 
 ## Repository Structure
 
 - **This repo (private):** `https://github.com/eugene-taran/sdsa` - Application source code
-- **Knowledge repo (public):** `https://github.com/eugene-taran/sdsa.team` - Knowledge blocks and learning paths
+- **Contexts repo (public):** `https://github.com/eugene-taran/sdsa.team` - Questionnaires and categories
 - **Domain:** `sdsa.team`
 
 ## Technical Stack
@@ -31,101 +31,109 @@ SDSA is a mobile application that provides guided learning journeys for software
 
 ### Model Strategy
 
-- **Free tier:** On-device inference using Rock
-  - Primary model: Phi-3-mini or Llama 3.2 1B
-  - Runs completely offline
-  - Privacy-preserving
-- **Paid tier (future):** Cloud models (Claude, GPT-4, etc.)
-  - Implementation deferred post-MVP
+- **Free tier:** Google Gemini models
+  - Joke generation: Gemini 2.5 Flash Image Preview (quick, lightweight)
+  - Main chat: Gemini Flash 2.5 (fast, capable)
+  - API-based implementation for MVP
+- **Future considerations:**
+  - On-device inference using Rock (when available)
+  - Paid tier with premium models (Claude Opus, GPT-4)
 
 ## MVP Scope
 
 ### Must Have
 
-1. **Knowledge block browser/navigator**
-   - Load knowledge blocks from public repo
-   - Render decision trees and paths
-   - Track user's journey through blocks
+1. **Category browser and questionnaire navigator**
+   - Load categories and questionnaires from public repo
+   - Display questionnaires organized by categories
+   - Track user's answers through questionnaires
 
 2. **Interactive questionnaire system**
-   - Dynamic questions based on previous answers
-   - State management for user's path
-   - Progress indication
+   - Support for multiple question types (text, textarea, radio, checkbox)
+   - State management for user's answers
+   - Progress indication through questionnaire
 
-3. **Contextual resource display**
-   - Show relevant resources based on path
-   - Resources accumulate as user progresses through tree
-   - Support markdown rendering with author attribution
-   - Code syntax highlighting
-   - Resources loaded from same sources as knowledge blocks
+3. **LLM-powered recommendations**
+   - Process questionnaire answers through configured LLM
+   - Generate personalized recommendations based on context
+   - Support for customizable system prompts per questionnaire
+   - Configurable temperature and token limits
 
 4. **Context-aware chat**
-   - Appears after knowledge block journey
-   - Has full context of user's selections and resources shown
-   - AI knows which resources user has access to
-   - Can reference specific guides in responses
-   - Powered by on-device model
+   - Appears after questionnaire completion
+   - Starts with a personalized joke about the topic (Gemini 2.5 Flash Image Preview)
+   - Main conversation powered by Gemini Flash 2.5
+   - Has full context of user's questionnaire answers
+   - AI provides guidance based on collected context
+   - Can continue conversation with awareness of initial responses
 
 ### Not in MVP
 
 - Voice input
 - MCP integration (will be desktop-only feature later)
 - Desktop app
-- Cloud model integration (deferred to paid tier)
 - User accounts/sync
 - Analytics
 - Multiple model selection
 
 ### Key User Requirements
 
-- **No depth limitations:** Knowledge blocks can go as deep as needed
-- **Backtracking:** Users can go back and change previous answers
-- **Block linking:** Future feature to merge multiple blocks into same context
+- **Flexible question types:** Support for text, textarea, radio, and checkbox inputs
+- **Answer revision:** Users can go back and change previous answers
+- **Category organization:** Questionnaires grouped into logical categories
 - **Model download:** Download on first launch, not bundled with app
-- **Offline caching:** Cache all knowledge blocks and resources locally
+- **Offline caching:** Cache all questionnaires and categories locally
 - **Session persistence:** Remember user's journey between app sessions
-- **Community contributions:** Direct PRs to public knowledge repo with author attribution
-- **No content gating:** All knowledge blocks available to free tier
+- **Community contributions:** Direct PRs to public contexts repo with author attribution
+- **No content gating:** All questionnaires available to free tier
 - **Free tier:** Full functionality with on-device models
 - **Paid tier:** Better model quality (Claude Opus, GPT-4) for premium advice
 
-## Knowledge Block Structure
+## Questionnaire Structure
 
-Knowledge blocks will live in the public repo with structure like:
+Questionnaires are JSON files organized in categories within the public repo:
 
-```yaml
-id: 'e2e-testing'
-title: 'End-to-End Testing Setup'
-initial_question: 'Do you have an existing test system?'
-paths:
-  yes:
-    question: 'Which framework are you using?'
-    options:
-      - cypress
-      - playwright
-      - selenium
-    resources:
-      - 'framework-comparison.md'
-    next: 'e2e-framework-specific'
-  no:
-    question: "What's your primary application type?"
-    options:
-      - web
-      - mobile
-      - desktop
-    resources:
-      - 'getting-started-with-e2e.md'
-context_variables:
-  - has_test_system
-  - framework_choice
-  - app_type
-metadata:
-  author: 'eugene-taran'  # GitHub username from authors.json
-  version: '1.0.0'
-  created: '2024-12-15'
+```json
+{
+  "id": "e2e-testing",
+  "title": "E2E Testing Setup",
+  "description": "Help configure end-to-end testing for your project",
+  "questions": [
+    {
+      "type": "radio",
+      "label": "Do you have an existing test system?",
+      "options": [
+        { "value": "yes", "label": "Yes, I have a test system" },
+        { "value": "no", "label": "No, starting from scratch" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Which features do you need?",
+      "options": [
+        { "value": "ci_integration", "label": "CI/CD Integration" },
+        { "value": "parallel", "label": "Parallel Execution" },
+        { "value": "reporting", "label": "Test Reporting" }
+      ]
+    },
+    {
+      "type": "text",
+      "label": "What is your primary testing goal?",
+      "placeholder": "e.g., regression testing, user journey validation..."
+    }
+  ],
+  "llmConfig": {
+    "systemPrompt": "You are an expert in E2E testing. Based on the user's answers, provide specific recommendations.",
+    "temperature": 0.7,
+    "maxTokens": 1500
+  },
+  "metadata": {
+    "author": "eugene-taran"
+  }
+}
 ```
 
-Resources are markdown files stored in `knowledge/resources/` that provide detailed guides. They accumulate as users traverse the decision tree and are available in the chat context.
+Categories are defined in `contexts/categories.json` with metadata like name, description, icon, and display order.
 
 ## Implementation Plan
 
@@ -138,8 +146,8 @@ Resources are markdown files stored in `knowledge/resources/` that provide detai
 
 2. **Install Core Dependencies**
    - React Navigation for screen navigation
-   - React Native YAML for parsing knowledge blocks
-   - React Native Markdown Display for rendering resources
+   - JSON parsing (built-in) for questionnaires
+   - React Native Markdown Display for rendering responses
    - Zustand for state management (lightweight alternative to Redux)
    - React Native Async Storage for persistence
 
@@ -151,46 +159,46 @@ Resources are markdown files stored in `knowledge/resources/` that provide detai
 ### Phase 2: Core Features Implementation
 
 4. **Create Navigation Structure**
-   - Home screen (topic selector)
-   - Knowledge block journey screen
-   - Resource viewer screen
+   - Home screen (category browser)
+   - Questionnaire screen (question flow)
+   - Results screen (LLM recommendations)
    - Chat screen (context-aware)
 
-5. **Implement Knowledge Block System**
-   - Knowledge block fetcher from GitHub
-   - YAML parser for block structure
-   - Decision tree renderer component
-   - Journey state manager (track user's path)
-   - Backtrack functionality
+5. **Implement Questionnaire System**
+   - Questionnaire fetcher from GitHub
+   - JSON parser for questionnaire structure
+   - Question renderer components (text, radio, checkbox, textarea)
+   - Answer state manager
+   - Navigation between questions
 
 6. **Build Interactive Questionnaire**
-   - Dynamic question components
-   - Answer selection UI
+   - Question type components (text, textarea, radio, checkbox)
+   - Answer collection UI
    - Progress indicator
-   - Context accumulator
+   - Answer validation and storage
 
-7. **Create Resource Display**
-   - Markdown renderer with syntax highlighting
-   - Code block component
-   - Resource caching for offline use
-   - Author attribution display from authors.json
-   - Resource accumulation from journey path
+7. **Create Results Display**
+   - Markdown renderer for LLM responses
+   - Code block component for recommendations
+   - Response caching for offline use
+   - Author attribution display
+   - Context summary from questionnaire
 
 8. **Integrate Rock AI**
    - Model download on first launch
    - Model initialization service
-   - Context-aware prompt builder
-   - Chat interface with journey context
+   - Prompt builder using questionnaire answers
+   - Chat interface with questionnaire context
 
 ### Phase 3: Data & Persistence
 
 9. **Implement Caching**
-   - Cache knowledge blocks locally
-   - Cache resources for offline access
-   - Persist user journey between sessions
+   - Cache questionnaires and categories locally
+   - Cache LLM responses for offline access
+   - Persist questionnaire answers between sessions
 
 10. **State Management**
-    - User journey state
+    - Questionnaire answer state
     - Downloaded models state
     - Cached content management
 
@@ -222,34 +230,34 @@ sdsa/
 ├── App.tsx                 # App entry point
 ├── src/
 │   ├── screens/
-│   │   ├── HomeScreen.tsx         # Topic selection
-│   │   ├── JourneyScreen.tsx      # Knowledge block journey
-│   │   ├── ResourceScreen.tsx     # Resource viewer
+│   │   ├── HomeScreen.tsx         # Category browser
+│   │   ├── QuestionnaireScreen.tsx # Questionnaire flow
+│   │   ├── ResultsScreen.tsx      # LLM recommendations
 │   │   └── ChatScreen.tsx         # Context-aware chat
 │   ├── components/
-│   │   ├── KnowledgeBlock/
+│   │   ├── Questionnaire/
 │   │   │   ├── QuestionCard.tsx
-│   │   │   ├── AnswerOptions.tsx
+│   │   │   ├── AnswerInput.tsx
 │   │   │   └── ProgressBar.tsx
-│   │   ├── ResourceViewer/
+│   │   ├── ResultsViewer/
 │   │   │   ├── MarkdownRenderer.tsx
 │   │   │   └── CodeBlock.tsx
 │   │   └── Chat/
 │   │       ├── MessageList.tsx
 │   │       └── InputBar.tsx
 │   ├── services/
-│   │   ├── knowledgeService.ts    # Fetch from GitHub
+│   │   ├── questionnaireService.ts # Fetch from GitHub
 │   │   ├── modelService.ts        # Rock AI management
 │   │   ├── cacheService.ts        # Offline storage
-│   │   └── journeyService.ts      # Journey state management
+│   │   └── answerService.ts       # Answer state management
 │   ├── store/
-│   │   ├── journeyStore.ts        # Zustand store for journey
+│   │   ├── questionnaireStore.ts  # Zustand store for questionnaire
 │   │   └── appStore.ts           # General app state
 │   ├── types/
-│   │   ├── knowledge.ts           # Knowledge block types
-│   │   └── journey.ts            # Journey state types
+│   │   ├── questionnaire.ts       # Questionnaire types
+│   │   └── answer.ts              # Answer state types
 │   └── utils/
-│       ├── yamlParser.ts
+│       ├── jsonParser.ts
 │       └── contextBuilder.ts     # Build context for AI
 ├── assets/
 │   ├── fonts/
@@ -259,38 +267,58 @@ sdsa/
 
 ## Key Implementation Notes
 
-### Rock Setup
+### Gemini Integration
 
 ```typescript
-import { LLM } from '@callstack/rock';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const model = new LLM({
-  model: 'phi-3-mini.onnx', // or llama-3.2-1b.onnx
-  maxTokens: 1024,
-  temperature: 0.7,
-});
+// Initialize Gemini clients
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const jokeModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image-preview' });
+const flashModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-// Include user's journey context with resources
-const context = getUserJourneyContext(); // All selections from knowledge blocks
-const resources = getAccumulatedResources(); // Resources shown during journey
-const response = await model.generate(`
-  Context: User went through ${context.topic} setup.
-  Their choices: ${JSON.stringify(context.selections)}
-  Resources provided: ${resources.map(r => r.title).join(', ')}
+// Generate initial joke after questionnaire completion
+async function generateWelcomeJoke(topic: string): Promise<string> {
+  const prompt = `Generate a short, friendly joke about learning ${topic}. 
+    Start with acknowledging that learning ${topic} isn't easy, then add a light-hearted joke.`;
   
-  User question: ${userInput}
-`);
+  const result = await jokeModel.generateContent(prompt);
+  return result.response.text();
+}
+
+// Main chat with Gemini Flash 2.5
+async function chatWithGemini(userInput: string, context: any): Promise<string> {
+  const answers = getQuestionnaireAnswers();
+  const questionnaire = getCurrentQuestionnaire();
+  
+  const prompt = `
+    ${questionnaire.llmConfig.systemPrompt}
+    
+    User completed the ${questionnaire.title} questionnaire.
+    Their answers: ${JSON.stringify(answers)}
+    
+    User question: ${userInput}
+  `;
+  
+  const result = await flashModel.generateContent(prompt);
+  return result.response.text();
+}
 ```
 
-### Knowledge Block Fetching
+### Questionnaire Fetching
 
 ```typescript
 // Fetch from public repo
-const KNOWLEDGE_BASE_URL = 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main';
+const CONTEXTS_BASE_URL = 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main';
 
-async function fetchKnowledgeBlock(blockId: string) {
-  const response = await fetch(`${KNOWLEDGE_BASE_URL}/blocks/${blockId}.yaml`);
-  return parseYAML(await response.text());
+async function fetchQuestionnaire(category: string, questionnaireId: string) {
+  const response = await fetch(`${CONTEXTS_BASE_URL}/contexts/categories/${category}/${questionnaireId}.json`);
+  return JSON.parse(await response.text());
+}
+
+async function fetchCategories() {
+  const response = await fetch(`${CONTEXTS_BASE_URL}/contexts/categories.json`);
+  return JSON.parse(await response.text());
 }
 ```
 
@@ -318,15 +346,15 @@ eas build --platform android --profile development
    - Supports multiple model formats
    - Maintained by CallStack (React Native experts)
 
-2. **Why knowledge blocks before chat:**
-   - Builds context progressively
+2. **Why questionnaires before chat:**
+   - Gathers structured context efficiently
    - More valuable than generic Q&A
-   - Guides users to relevant solutions
-   - Chat becomes personalized to their specific situation
+   - Enables LLM to provide targeted recommendations
+   - Chat becomes personalized to user's specific situation
 
-3. **Why public knowledge repo:**
-   - Community can contribute learning paths
-   - Transparent learning content
+3. **Why public contexts repo:**
+   - Community can contribute questionnaires
+   - Transparent context-gathering approach
    - Builds trust and community
    - Separates content from application logic
 
@@ -351,15 +379,15 @@ npx expo start --dev-client
 
 ## Current Focus
 
-**BUILD THE KNOWLEDGE BLOCK NAVIGATION FIRST**
-The chat is secondary. The value is in the guided journey through knowledge blocks that builds context. Focus on:
+**BUILD THE QUESTIONNAIRE SYSTEM FIRST**
+The chat is secondary. The value is in the structured context gathering through questionnaires. Focus on:
 
-1. Loading and parsing knowledge blocks
-2. Rendering decision trees
-3. Tracking user path
-4. Showing relevant resources
+1. Loading categories and questionnaires
+2. Rendering different question types
+3. Collecting and storing answers
+4. Processing answers through LLM for recommendations
 
-Chat integration comes after the journey system works.
+Chat integration comes after the questionnaire system works.
 
 ## Future Expansion (Not MVP)
 
@@ -368,7 +396,7 @@ Chat integration comes after the journey system works.
 - Multiple AI model selection
 - Collaborative features
 - Integration with development tools
-- Advanced analytics on learning paths
+- Advanced analytics on questionnaire responses
 
 ## Current Implementation Status
 
@@ -380,32 +408,34 @@ Chat integration comes after the journey system works.
 - Core dependencies installed
 - Complete project folder structure created
 - All main screens implemented:
-  - HomeScreen - Topic selection
-  - JourneyScreen - Interactive questionnaire with completion flow
-  - ResourceScreen - Markdown resource viewer
+  - HomeScreen - Category and questionnaire selection
+  - QuestionnaireScreen - Interactive questionnaire with completion flow
+  - ResultsScreen - LLM-generated recommendations
   - ChatScreen - Context-aware AI chat
 - Services implemented:
-  - KnowledgeService - Fetches blocks from GitHub with mock fallback
+  - QuestionnaireService - Fetches questionnaires from GitHub with mock fallback
   - ModelService - Mock AI service ready for Rock integration
   - CacheService - Complete offline caching with AsyncStorage
 - State management with Zustand
-- Journey persistence and context tracking
+- Answer persistence and context tracking
 - EAS Build configuration
 - Comprehensive README with setup instructions
 
-### 🚧 Waiting for External Dependencies
+### 🚧 Current Implementation Status
 
-- **Rock Integration**: Package not yet publicly available from CallStack
-- **Knowledge Repository**: ✅ Initial content now available at github.com/eugene-taran/sdsa.team with release system
+- **Gemini Integration**: Ready to implement with Google AI SDK
+- **Contexts Repository**: ✅ Questionnaires and categories available at github.com/eugene-taran/sdsa.team with automated release system
+- **Rock Integration**: Deferred (package not yet publicly available from CallStack)
 
 ### 📝 Next Steps for Production
 
-1. Replace mock ModelService with actual Rock implementation when available
-2. Create content in the public knowledge repository
-3. Test on physical devices with development builds
-4. Implement model download manager
+1. Implement Gemini API integration (Flash Image Preview for jokes, Flash 2.5 for chat)
+2. Add API key management and environment configuration
+3. Create questionnaires in the public contexts repository
+4. Test on physical devices with development builds
 5. Add error handling and recovery flows
 6. UI/UX polish and animations
+7. Consider Rock integration when package becomes available
 
 ## Running the Project
 
@@ -447,6 +477,5 @@ yarn start
 
 ---
 
-_Last Updated: December 15, 2024_
-_MVP Target: Functional prototype with knowledge block navigation and basic chat_
-_Knowledge Repository: Active at github.com/eugene-taran/sdsa.team with automated releases_
+_MVP Target: Functional prototype with questionnaire system and context-aware chat_
+_Contexts Repository: Active at github.com/eugene-taran/sdsa.team with automated releases_

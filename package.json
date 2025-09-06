@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
+    "@google/generative-ai": "^0.24.1",
     "@react-native-async-storage/async-storage": "2.1.0",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",

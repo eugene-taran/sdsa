@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useJourneyStore } from '../store/journeyStore';
-import { modelService } from '../services/modelService';
+import { geminiService, QuestionnaireContext } from '../services/geminiService';
 
 interface Message {
   id: string;
@@ -25,30 +25,31 @@ export const ChatScreen = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isModelReady, setIsModelReady] = useState(false);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   const { path, answers, context } = useJourneyStore();
 
   useEffect(() => {
     initializeModel();
-    addInitialMessage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeModel = async () => {
     try {
-      await modelService.initialize({
-        model: 'phi-3-mini.onnx',
-        maxTokens: 1024,
-        temperature: 0.7,
-      });
+      // Initialize Gemini service
+      await geminiService.initialize();
       setIsModelReady(true);
+      
+      // Generate and show welcome joke
+      await showWelcomeJoke();
     } catch (error) {
-      console.error('Error initializing model:', error);
-      // Add error message
+      console.error('Error initializing Gemini:', error);
+      // Try to initialize without showing error, user might need to add API key
+      setIsModelReady(false);
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: "I'm having trouble loading the AI model. Please try again later.",
+        text: "Please ensure Gemini API key is configured. You can set it in the app settings or as EXPO_PUBLIC_GEMINI_API_KEY environment variable.",
         isUser: false,
         timestamp: new Date(),
       };
@@ -56,15 +57,37 @@ export const ChatScreen = () => {
     }
   };
 
-  const addInitialMessage = () => {
-    const journeyContext = buildJourneyContext();
-    const initialMessage: Message = {
-      id: '1',
-      text: `I understand you've been exploring ${journeyContext.topic || 'software development'}. Based on your journey, I can see you're interested in ${journeyContext.summary || 'learning more'}. How can I help you with this?`,
-      isUser: false,
-      timestamp: new Date(),
-    };
-    setMessages([initialMessage]);
+  const showWelcomeJoke = async () => {
+    if (hasShownWelcome) return;
+    
+    try {
+      const journeyContext = buildJourneyContext();
+      const questionnaireContext = buildQuestionnaireContext();
+      
+      // Initialize chat with context and get welcome joke
+      const welcomeMessage = await geminiService.initializeChat(questionnaireContext);
+      
+      const jokeMessage: Message = {
+        id: '1',
+        text: welcomeMessage,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      
+      setMessages([jokeMessage]);
+      setHasShownWelcome(true);
+    } catch (error) {
+      console.error('Error generating welcome joke:', error);
+      // Fallback to a simple welcome message
+      const fallbackMessage: Message = {
+        id: '1',
+        text: `Welcome! I see you've completed the questionnaire about ${path[0] || 'software development'}. I'm here to help guide you through your learning journey. What would you like to know?`,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages([fallbackMessage]);
+      setHasShownWelcome(true);
+    }
   };
 
   const buildJourneyContext = () => {
@@ -78,6 +101,25 @@ export const ChatScreen = () => {
       topic,
       summary: choices || 'getting started',
       fullContext: { path, answers, context },
+    };
+  };
+
+  const buildQuestionnaireContext = (): QuestionnaireContext => {
+    // Build context for Gemini service
+    const topic = path[0] || 'Software Development';
+    
+    // Convert answers to array format expected by Gemini
+    const formattedAnswers = Object.entries(answers).map(([question, answer]) => ({
+      question,
+      value: answer,
+    }));
+    
+    return {
+      title: topic,
+      description: `Learning journey for ${topic}`,
+      answers: formattedAnswers,
+      systemPrompt: `You are an expert software development mentor specializing in ${topic}. 
+        Provide helpful, specific, and actionable guidance based on the user's experience level and goals.`,
     };
   };
 
@@ -96,23 +138,14 @@ export const ChatScreen = () => {
     setIsLoading(true);
 
     try {
-      const journeyContext = buildJourneyContext();
-      const prompt = `
-        User Context:
-        - Topic: ${journeyContext.topic}
-        - Journey: ${journeyContext.summary}
-        - Full Context: ${JSON.stringify(journeyContext.fullContext)}
-        
-        User Question: ${inputText}
-        
-        Please provide a helpful response based on the user's journey and context.
-      `;
-
-      const response = await modelService.generate(prompt, journeyContext.fullContext);
+      const questionnaireContext = buildQuestionnaireContext();
+      
+      // Use Gemini Flash 2.0 for the main chat
+      const response = await geminiService.chat(inputText, questionnaireContext);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: response.text,
+        text: response,
         isUser: false,
         timestamp: new Date(),
       };
@@ -173,7 +206,7 @@ export const ChatScreen = () => {
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
-          placeholder={isModelReady ? 'Ask a question...' : 'Loading model...'}
+          placeholder={isModelReady ? 'Ask a question...' : 'Initializing Gemini...'}
           placeholderTextColor="#999"
           multiline
           maxLength={500}
