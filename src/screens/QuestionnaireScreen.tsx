@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, TextInput } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useJourneyStore } from '../store/journeyStore';
 import { JourneyScreenNavigationProp } from '../types/navigation';
@@ -28,6 +28,7 @@ export const QuestionnaireScreen = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [textInputValue, setTextInputValue] = useState<string>('');
 
   useEffect(() => {
     loadQuestionnaire();
@@ -86,6 +87,7 @@ export const QuestionnaireScreen = () => {
       setJourney(newJourney);
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setIsComplete(false);
+      setTextInputValue(''); // Clear text input when going back
     }
   };
 
@@ -116,11 +118,16 @@ export const QuestionnaireScreen = () => {
   const progress = ((currentQuestionIndex + 1) / questionnaire.questions.length) * 100;
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.progressBar, { backgroundColor: isDark ? '#333' : '#e0e0e0' }]}>
         <View style={[styles.progressFill, { width: `${progress}%` }]} />
       </View>
-
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
       {!isComplete && currentQuestion && (
         <View style={[styles.questionContainer, { backgroundColor: colors.card }]}>
           <Text style={[styles.questionNumber, { color: colors.secondaryText }]}>
@@ -128,24 +135,58 @@ export const QuestionnaireScreen = () => {
           </Text>
           <Text style={[styles.questionText, { color: colors.text }]}>{currentQuestion.label}</Text>
 
-          <View style={styles.optionsContainer}>
-            {currentQuestion.options?.map((option, index) => (
+          {currentQuestion.type === 'text' || currentQuestion.type === 'textarea' ? (
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.textInput,
+                  currentQuestion.type === 'textarea' && styles.textArea,
+                  { 
+                    backgroundColor: isDark ? '#2c2c2e' : '#f0f0f0',
+                    color: colors.text,
+                    borderColor: colors.border,
+                  },
+                ]}
+                placeholder={currentQuestion.placeholder || 'Enter your answer'}
+                placeholderTextColor={colors.placeholder}
+                value={textInputValue}
+                onChangeText={setTextInputValue}
+                multiline={currentQuestion.type === 'textarea'}
+                numberOfLines={currentQuestion.type === 'textarea' ? 4 : 1}
+              />
               <TouchableOpacity
-                key={index}
-                style={[styles.optionButton, { backgroundColor: isDark ? '#2c2c2e' : '#f0f0f0' }]}
-                onPress={() => handleAnswer(typeof option === 'string' ? option : option.label)}
+                style={[styles.submitButton, { backgroundColor: colors.primary }]}
+                onPress={() => {
+                  if (textInputValue.trim()) {
+                    handleAnswer(textInputValue);
+                    setTextInputValue('');
+                  }
+                }}
+                disabled={!textInputValue.trim()}
               >
-                <Text style={[styles.optionText, { color: colors.text }]}>
-                  {typeof option === 'string' ? option : option.label}
-                </Text>
-                {typeof option !== 'string' && option.hasTextInput && (
-                  <Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
-                    {option.textInputPlaceholder || 'Additional details'}
-                  </Text>
-                )}
+                <Text style={styles.submitButtonText}>Continue</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            </View>
+          ) : (
+            <View style={styles.optionsContainer}>
+              {currentQuestion.options?.map((option, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.optionButton, { backgroundColor: isDark ? '#2c2c2e' : '#f0f0f0' }]}
+                  onPress={() => handleAnswer(typeof option === 'string' ? option : option.label)}
+                >
+                  <Text style={[styles.optionText, { color: colors.text }]}>
+                    {typeof option === 'string' ? option : option.label}
+                  </Text>
+                  {typeof option !== 'string' && option.hasTextInput && (
+                    <Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
+                      {option.textInputPlaceholder || 'Additional details'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       )}
 
@@ -199,13 +240,21 @@ export const QuestionnaireScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
@@ -247,6 +296,7 @@ const styles = StyleSheet.create({
   questionContainer: {
     padding: 20,
     margin: 20,
+    marginTop: 20,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -282,6 +332,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
     textAlign: 'center',
+  },
+  inputContainer: {
+    width: '100%',
+  },
+  textInput: {
+    padding: 16,
+    borderRadius: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  submitButton: {
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   backButton: {
     marginHorizontal: 20,

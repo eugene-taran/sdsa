@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
@@ -16,6 +16,32 @@ const Stack = createStackNavigator();
 export default function App() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
+
+  useEffect(() => {
+    // Fix scrolling on web
+    if (Platform.OS === 'web') {
+      const style = document.createElement('style');
+      style.innerHTML = `
+        body {
+          overflow: auto !important;
+        }
+        #root {
+          min-height: 100vh;
+          height: auto !important;
+        }
+        /* Ensure ScrollView works properly */
+        div[data-testid="ScrollView"] {
+          height: 100%;
+          overflow: auto !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, []);
 
   return (
     <SafeAreaProvider>
