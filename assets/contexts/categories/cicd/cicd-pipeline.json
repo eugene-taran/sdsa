@@ -1,0 +1,133 @@
+{
+  "id": "cicd-pipeline",
+  "title": "CI/CD Pipeline Setup",
+  "description": "Configure continuous integration and deployment pipelines for your project",
+  "questions": [
+    {
+      "type": "radio",
+      "label": "What platform are you using for CI/CD?",
+      "options": [
+        { "value": "github-actions", "label": "GitHub Actions" },
+        { "value": "jenkins", "label": "Jenkins" },
+        { "value": "gitlab-ci", "label": "GitLab CI/CD" },
+        { "value": "circleci", "label": "CircleCI" },
+        { 
+          "value": "other", 
+          "label": "Other", 
+          "hasTextInput": true,
+          "textInputPlaceholder": "Please specify..."
+        }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "What type of project are you deploying?",
+      "options": [
+        { "value": "node-app", "label": "Node.js Application" },
+        { "value": "python-app", "label": "Python Application" },
+        { "value": "docker-container", "label": "Docker Container" },
+        { "value": "static-site", "label": "Static Website" },
+        { "value": "mobile-app", "label": "Mobile Application" },
+        { 
+          "value": "other", 
+          "label": "Other", 
+          "hasTextInput": true,
+          "textInputPlaceholder": "Describe your project type..."
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Where are you deploying to? (select all that apply)",
+      "options": [
+        { "value": "aws", "label": "AWS" },
+        { "value": "azure", "label": "Azure" },
+        { "value": "gcp", "label": "Google Cloud Platform" },
+        { "value": "vercel", "label": "Vercel" },
+        { "value": "netlify", "label": "Netlify" },
+        { "value": "heroku", "label": "Heroku" },
+        { "value": "docker-hub", "label": "Docker Hub" },
+        { "value": "github-pages", "label": "GitHub Pages" },
+        { 
+          "value": "other", 
+          "label": "Other", 
+          "hasTextInput": true,
+          "textInputPlaceholder": "Specify other deployment targets..."
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Which environments do you need?",
+      "options": [
+        { "value": "development", "label": "Development" },
+        { "value": "staging", "label": "Staging" },
+        { "value": "production", "label": "Production" },
+        { "value": "qa", "label": "QA/Testing" },
+        { "value": "preview", "label": "Preview/Feature branches" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Do you have automated tests?",
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "planning", "label": "Planning to add" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "What types of tests do you run?",
+      "options": [
+        { "value": "unit", "label": "Unit Tests" },
+        { "value": "integration", "label": "Integration Tests" },
+        { "value": "e2e", "label": "End-to-End Tests" },
+        { "value": "performance", "label": "Performance Tests" },
+        { "value": "security", "label": "Security Scans" },
+        { "value": "lint", "label": "Linting/Code Quality" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "What deployment strategy do you prefer?",
+      "options": [
+        { "value": "rolling", "label": "Rolling deployment" },
+        { "value": "blue-green", "label": "Blue-Green deployment" },
+        { "value": "canary", "label": "Canary deployment" },
+        { "value": "basic", "label": "Basic/Direct deployment" },
+        { "value": "not-sure", "label": "Not sure yet" }
+      ]
+    },
+    {
+      "type": "text",
+      "label": "How many developers are on your team?",
+      "placeholder": "e.g., 5"
+    },
+    {
+      "type": "radio",
+      "label": "How often do you deploy?",
+      "options": [
+        { "value": "multiple-daily", "label": "Multiple times per day" },
+        { "value": "daily", "label": "Daily" },
+        { "value": "weekly", "label": "Weekly" },
+        { "value": "biweekly", "label": "Bi-weekly" },
+        { "value": "monthly", "label": "Monthly" },
+        { "value": "adhoc", "label": "Ad-hoc/As needed" }
+      ]
+    },
+    {
+      "type": "textarea",
+      "label": "Any specific requirements or constraints?",
+      "placeholder": "e.g., Need approval gates, must comply with SOC2, require rollback capability..."
+    }
+  ],
+  "llmConfig": {
+    "systemPrompt": "You are a DevOps expert specializing in CI/CD pipelines. Based on the user's answers, provide specific, actionable recommendations for setting up their CI/CD pipeline. Include actual configuration examples, YAML snippets, and step-by-step instructions relevant to their chosen platform and deployment targets. Focus on best practices, security considerations, and optimization tips specific to their setup.",
+    "temperature": 0.7,
+    "maxTokens": 2000
+  },
+  "metadata": {
+    "author": "test-contributor"
+  }
+}
