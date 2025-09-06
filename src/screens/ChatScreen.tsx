@@ -9,9 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native';
 import { useJourneyStore } from '../store/journeyStore';
 import { geminiService, QuestionnaireContext } from '../services/geminiService';
+import { useThemeColors } from '../utils/colors';
 
 interface Message {
   id: string;
@@ -27,6 +29,9 @@ export const ChatScreen = () => {
   const [isModelReady, setIsModelReady] = useState(false);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const colors = useThemeColors();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const { path, answers, context } = useJourneyStore();
 
@@ -170,9 +175,26 @@ export const ChatScreen = () => {
   };
 
   const renderMessage = ({ item }: { item: Message }) => (
-    <View style={[styles.messageContainer, item.isUser ? styles.userMessage : styles.aiMessage]}>
-      <Text style={[styles.messageText, item.isUser && styles.userMessageText]}>{item.text}</Text>
-      <Text style={styles.timestamp}>
+    <View style={[
+      styles.messageContainer,
+      item.isUser ? styles.userMessage : [
+        styles.aiMessage,
+        { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+        }
+      ]
+    ]}>
+      <Text style={[
+        styles.messageText,
+        item.isUser ? styles.userMessageText : { color: colors.text }
+      ]}>
+        {item.text}
+      </Text>
+      <Text style={[
+        styles.timestamp,
+        { color: item.isUser ? 'rgba(255,255,255,0.7)' : colors.secondaryText }
+      ]}>
         {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </Text>
     </View>
@@ -180,7 +202,7 @@ export const ChatScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={90}
     >
@@ -194,19 +216,26 @@ export const ChatScreen = () => {
       />
 
       {isLoading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#007AFF" />
-          <Text style={styles.loadingText}>AI is thinking...</Text>
+        <View style={[styles.loadingContainer, { backgroundColor: colors.card }]}>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.secondaryText }]}>AI is thinking...</Text>
         </View>
       )}
 
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: isDark ? '#2c2c2e' : '#f0f0f0',
+              borderColor: colors.border,
+              color: colors.text,
+            }
+          ]}
           value={inputText}
           onChangeText={setInputText}
           placeholder={isModelReady ? 'Ask a question...' : 'Initializing Gemini...'}
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           multiline
           maxLength={500}
           editable={isModelReady}
@@ -214,6 +243,7 @@ export const ChatScreen = () => {
         <TouchableOpacity
           style={[
             styles.sendButton,
+            { backgroundColor: colors.primary },
             (!inputText.trim() || !isModelReady) && styles.sendButtonDisabled,
           ]}
           onPress={sendMessage}
@@ -229,7 +259,6 @@ export const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   messagesContainer: {
     padding: 10,
@@ -238,8 +267,8 @@ const styles = StyleSheet.create({
   messageContainer: {
     maxWidth: '80%',
     marginVertical: 5,
-    padding: 12,
-    borderRadius: 15,
+    padding: 14,
+    borderRadius: 18,
   },
   userMessage: {
     alignSelf: 'flex-end',
@@ -247,21 +276,17 @@ const styles = StyleSheet.create({
   },
   aiMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
   },
   messageText: {
     fontSize: 16,
-    lineHeight: 20,
-    color: '#333',
+    lineHeight: 22,
   },
   userMessageText: {
     color: '#fff',
   },
   timestamp: {
     fontSize: 12,
-    color: '#999',
     marginTop: 5,
   },
   loadingContainer: {
@@ -269,24 +294,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: '#fff',
   },
   loadingText: {
     marginLeft: 10,
-    color: '#666',
     fontSize: 14,
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -297,12 +317,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#007AFF',
     borderRadius: 20,
     justifyContent: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.5,
   },
   sendButtonText: {
     color: '#fff',
