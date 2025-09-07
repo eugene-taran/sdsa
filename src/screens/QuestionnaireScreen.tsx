@@ -17,7 +17,8 @@ export const QuestionnaireScreen = () => {
   const navigation = useNavigation<QuestionnaireScreenNavigationProp>();
   const route = useRoute<QuestionnaireRouteProp>();
   const { categoryPath, questionnaireId } = route.params;
-  const editMode = 'editMode' in route.params ? route.params.editMode : false;
+  // Read editMode directly from route params (type-safe check)
+  const isEditMode = 'editMode' in route.params && route.params.editMode === true;
   const questionnaireStore = useQuestionnaireStore();
   const { addAnswer, setContext, clearAnswers, answers: existingAnswers, saveState } = questionnaireStore;
   const colors = useThemeColors();
@@ -27,7 +28,6 @@ export const QuestionnaireScreen = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [journey, setJourney] = useState<string[]>([]);
-  const [isEditMode] = useState(editMode || false);
   const [isComplete, setIsComplete] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,16 +38,39 @@ export const QuestionnaireScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryPath, questionnaireId]);
 
+  // Initialize edit mode state when questionnaire loads
   useEffect(() => {
-    // Restore answers if in edit mode
-    if (isEditMode && existingAnswers && questionnaire) {
-      const restoredJourney = Object.keys(existingAnswers);
+    if (isEditMode && questionnaire && existingAnswers && Object.keys(existingAnswers).length > 0) {
+      // Map questions to their corresponding answers to maintain correct order
+      const restoredJourney = questionnaire.questions.map(question => 
+        existingAnswers[question.label] || ''
+      );
+      
+      // Reset to start of questionnaire for editing
       setJourney(restoredJourney);
-      // Start from the beginning to allow editing all answers
       setCurrentQuestionIndex(0);
+      setIsComplete(false);
+      
+      // Pre-fill text input for the first question if it's a text type
+      const firstQuestion = questionnaire.questions[0];
+      if (firstQuestion && (firstQuestion.type === 'text' || firstQuestion.type === 'textarea')) {
+        const firstAnswer = existingAnswers[firstQuestion.label] || '';
+        setTextInputValue(firstAnswer);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, questionnaire]); // Only depend on editMode and questionnaire loading
+
+  useEffect(() => {
+    // Pre-fill text input with previous answer when navigating questions in edit mode
+    if (isEditMode && journey.length > 0 && currentQuestionIndex < journey.length) {
+      const currentQuestion = questionnaire?.questions[currentQuestionIndex];
+      if (currentQuestion && (currentQuestion.type === 'text' || currentQuestion.type === 'textarea')) {
+        setTextInputValue(journey[currentQuestionIndex] || '');
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, questionnaire]);
+  }, [currentQuestionIndex, isEditMode]);
 
   const loadQuestionnaire = async () => {
     try {
@@ -84,7 +107,15 @@ export const QuestionnaireScreen = () => {
     const currentQuestion = getCurrentQuestion();
     if (!currentQuestion) return;
 
-    const newJourney = [...journey, answer];
+    let newJourney: string[];
+    if (isEditMode) {
+      // In edit mode, replace the answer at current index
+      newJourney = [...journey];
+      newJourney[currentQuestionIndex] = answer;
+    } else {
+      // In normal mode, append the answer
+      newJourney = [...journey, answer];
+    }
     setJourney(newJourney);
 
     // Store in global state
@@ -95,19 +126,33 @@ export const QuestionnaireScreen = () => {
 
     // Check if journey is complete
     if (currentQuestionIndex >= (questionnaire?.questions.length || 0) - 1) {
-      setIsComplete(true);
+      // In edit mode, don't auto-complete - user needs to explicitly finish
+      if (!isEditMode) {
+        setIsComplete(true);
+      } else {
+        // In edit mode, stay on last question until user explicitly completes
+        // They can navigate back or press a "Finish Editing" button
+        setCurrentQuestionIndex((questionnaire?.questions.length || 1) - 1);
+      }
     } else {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // Clear text input for next question if not in edit mode
+      if (!isEditMode) {
+        setTextInputValue('');
+      }
     }
   };
 
   const handleBack = () => {
     if (currentQuestionIndex > 0) {
-      const newJourney = journey.slice(0, -1);
-      setJourney(newJourney);
+      if (!isEditMode) {
+        // In normal mode, remove the last answer
+        const newJourney = journey.slice(0, -1);
+        setJourney(newJourney);
+      }
+      // In edit mode, journey stays intact, just navigate
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setIsComplete(false);
-      setTextInputValue(''); // Clear text input when going back
     }
   };
 
@@ -140,8 +185,19 @@ export const QuestionnaireScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.progressBar, { backgroundColor: isDark ? '#333' : '#e0e0e0' }]}>
-        <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        <View style={[
+          styles.progressFill, 
+          { 
+            width: `${progress}%`,
+            backgroundColor: isEditMode ? colors.warning || '#FFA500' : '#4CAF50'
+          }
+        ]} />
       </View>
+      {isEditMode && (
+        <View style={[styles.editModeIndicator, { backgroundColor: colors.warning || '#FFA500' }]}>
+          <Text style={styles.editModeText}>✏️ Edit Mode - Update Your Answers</Text>
+        </View>
+      )}
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -151,7 +207,7 @@ export const QuestionnaireScreen = () => {
       {!isComplete && currentQuestion && (
         <View style={[styles.questionContainer, { backgroundColor: colors.card }]}>
           <Text style={[styles.questionNumber, { color: colors.secondaryText }]}>
-            Question {currentQuestionIndex + 1} of {questionnaire.questions.length}
+            {isEditMode ? '✏️ ' : ''}Question {currentQuestionIndex + 1} of {questionnaire.questions.length}
           </Text>
           <Text style={[styles.questionText, { color: colors.text }]}>{currentQuestion.label}</Text>
 
@@ -186,22 +242,36 @@ export const QuestionnaireScreen = () => {
             </View>
           ) : (
             <View style={styles.optionsContainer}>
-              {currentQuestion.options?.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.optionButton, { backgroundColor: isDark ? '#2c2c2e' : '#f0f0f0' }]}
-                  onPress={() => handleAnswer(typeof option === 'string' ? option : option.label)}
-                >
-                  <Text style={[styles.optionText, { color: colors.text }]}>
-                    {typeof option === 'string' ? option : option.label}
-                  </Text>
-                  {typeof option !== 'string' && option.hasTextInput && (
-                    <Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
-                      {option.textInputPlaceholder || 'Additional details'}
+              {currentQuestion.options?.map((option, index) => {
+                const optionValue = typeof option === 'string' ? option : option.label;
+                const isSelected = isEditMode && journey[currentQuestionIndex] === optionValue;
+                
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.optionButton, 
+                      { 
+                        backgroundColor: isSelected 
+                          ? colors.primary + '20' 
+                          : isDark ? '#2c2c2e' : '#f0f0f0',
+                        borderWidth: isSelected ? 2 : 0,
+                        borderColor: isSelected ? colors.primary : undefined,
+                      }
+                    ]}
+                    onPress={() => handleAnswer(optionValue)}
+                  >
+                    <Text style={[styles.optionText, { color: colors.text }]}>
+                      {optionValue}
                     </Text>
-                  )}
-                </TouchableOpacity>
-              ))}
+                    {typeof option !== 'string' && option.hasTextInput && (
+                      <Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
+                        {option.textInputPlaceholder || 'Additional details'}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         </View>
@@ -210,6 +280,15 @@ export const QuestionnaireScreen = () => {
       {currentQuestionIndex > 0 && !isComplete && (
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Text style={[styles.backButtonText, { color: colors.primary }]}>← Back</Text>
+        </TouchableOpacity>
+      )}
+
+      {isEditMode && currentQuestionIndex === (questionnaire?.questions.length || 0) - 1 && !isComplete && (
+        <TouchableOpacity 
+          style={[styles.finishEditButton, { backgroundColor: colors.success }]}
+          onPress={() => setIsComplete(true)}
+        >
+          <Text style={styles.finishEditButtonText}>✅ Finish Editing</Text>
         </TouchableOpacity>
       )}
 
@@ -459,6 +538,28 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  editModeIndicator: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  editModeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  finishEditButton: {
+    marginHorizontal: 20,
+    marginVertical: 10,
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  finishEditButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
