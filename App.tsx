@@ -2,8 +2,9 @@ import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { useColorScheme, Platform } from 'react-native';
+import { useColorScheme, Platform, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { QuestionnaireScreen } from './src/screens/QuestionnaireScreen';
@@ -16,6 +17,21 @@ const Stack = createStackNavigator();
 export default function App() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
+
+  const handleGitHubPress = () => {
+    Linking.openURL('https://github.com/eugene-taran/sdsa.team');
+  };
+
+  const GitHubButton = () => (
+    <TouchableOpacity
+      onPress={handleGitHubPress}
+      style={{ marginRight: 15 }}
+      accessibilityLabel="Open GitHub repository"
+      accessibilityRole="button"
+    >
+      <Ionicons name="logo-github" size={24} color={colors.text} />
+    </TouchableOpacity>
+  );
 
   useEffect(() => {
     // Fix scrolling on web
@@ -70,6 +86,7 @@ export default function App() {
             headerTitleStyle: {
               fontWeight: 'bold',
             },
+            headerRight: GitHubButton,
           }}
         />
         <Stack.Screen
@@ -81,6 +98,7 @@ export default function App() {
               backgroundColor: colors.card,
             },
             headerTintColor: colors.text,
+            headerRight: GitHubButton,
           })}
         />
         <Stack.Screen
@@ -92,6 +110,7 @@ export default function App() {
               backgroundColor: colors.card,
             },
             headerTintColor: colors.text,
+            headerRight: GitHubButton,
           }}
         />
         <Stack.Screen
@@ -103,6 +122,7 @@ export default function App() {
               backgroundColor: colors.card,
             },
             headerTintColor: colors.text,
+            headerRight: GitHubButton,
           }}
         />
         <Stack.Screen
@@ -114,6 +134,7 @@ export default function App() {
               backgroundColor: colors.card,
             },
             headerTintColor: colors.text,
+            headerRight: GitHubButton,
           }}
         />
       </Stack.Navigator>

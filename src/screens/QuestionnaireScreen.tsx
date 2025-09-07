@@ -230,15 +230,30 @@ export const QuestionnaireScreen = () => {
                 multiline={currentQuestion.type === 'textarea'}
                 numberOfLines={currentQuestion.type === 'textarea' ? 4 : 1}
               />
-              <TouchableOpacity
-                style={[styles.submitButton, { backgroundColor: colors.primary }]}
-                onPress={() => {
-                  handleAnswer(textInputValue.trim() || '');
-                  setTextInputValue('');
-                }}
-              >
-                <Text style={styles.submitButtonText}>Continue</Text>
-              </TouchableOpacity>
+              {/* Show appropriate button based on context */}
+              {isEditMode && currentQuestionIndex === (questionnaire?.questions.length || 0) - 1 ? (
+                // On last question in edit mode, show Save button
+                <TouchableOpacity
+                  style={[styles.submitButton, { backgroundColor: colors.primary }]}
+                  onPress={() => {
+                    handleAnswer(textInputValue.trim() || '');
+                    setTextInputValue('');
+                  }}
+                >
+                  <Text style={styles.submitButtonText}>Save Answer</Text>
+                </TouchableOpacity>
+              ) : (
+                // Normal Continue button for other cases
+                <TouchableOpacity
+                  style={[styles.submitButton, { backgroundColor: colors.primary }]}
+                  onPress={() => {
+                    handleAnswer(textInputValue.trim() || '');
+                    setTextInputValue('');
+                  }}
+                >
+                  <Text style={styles.submitButtonText}>Continue</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={styles.optionsContainer}>
