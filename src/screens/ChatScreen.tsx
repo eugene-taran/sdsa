@@ -36,6 +36,7 @@ export const ChatScreen = () => {
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const flatListRef = useRef<FlatList>(null);
   const colors = useThemeColors();
   const colorScheme = useColorScheme();
@@ -50,6 +51,7 @@ export const ChatScreen = () => {
 
   const initializeModel = async () => {
     try {
+      setIsInitializing(true);
       // Initialize Gemini service
       await geminiService.initialize();
       setIsModelReady(true);
@@ -79,6 +81,8 @@ export const ChatScreen = () => {
       setTimeout(() => {
         setIsModelReady(true);
       }, 2000);
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -297,24 +301,33 @@ export const ChatScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={[styles.messagesContainer, { paddingBottom: 20 }]}
-          style={styles.flatList}
-          onContentSizeChange={() => {
-            // Always scroll to bottom when content changes
-            flatListRef.current?.scrollToEnd({ animated: false });
-          }}
-          onLayout={() => {
-            // Scroll on initial layout
-            setTimeout(() => {
+        {isInitializing ? (
+          <View style={styles.initializingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.initializingText, { color: colors.secondaryText }]}>
+              Generating your personalized welcome...
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={[styles.messagesContainer, { paddingBottom: 20 }]}
+            style={styles.flatList}
+            onContentSizeChange={() => {
+              // Always scroll to bottom when content changes
               flatListRef.current?.scrollToEnd({ animated: false });
-            }, 50);
-          }}
-        />
+            }}
+            onLayout={() => {
+              // Scroll on initial layout
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: false });
+              }, 50);
+            }}
+          />
+        )}
 
       {isLoading && (
         <View style={[styles.loadingContainer, { backgroundColor: colors.card }]}>
@@ -415,6 +428,16 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 10,
     fontSize: 14,
+  },
+  initializingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initializingText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
