@@ -4,8 +4,8 @@ import { RouteProp } from '@react-navigation/native';
 export type RootStackParamList = {
   Home: undefined;
   Questionnaire: { 
-    topicId: string;
-    categoryPath?: string;
+    categoryPath: string;
+    questionnaireId: string;
     editMode?: boolean;
   };
   Resource: { resourcePath: string };

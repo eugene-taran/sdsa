@@ -37,9 +37,8 @@ export const ContextHeader = () => {
     
     if (categoryPath && questionnaireId) {
       navigation.navigate('Questionnaire', {
-        topicId: questionnaireId,
-        // @ts-ignore - we'll add this param to navigation types
         categoryPath,
+        questionnaireId,
         editMode: true,
       });
     }
