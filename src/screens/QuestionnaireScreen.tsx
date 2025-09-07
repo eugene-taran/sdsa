@@ -157,12 +157,9 @@ export const QuestionnaireScreen = () => {
               <TouchableOpacity
                 style={[styles.submitButton, { backgroundColor: colors.primary }]}
                 onPress={() => {
-                  if (textInputValue.trim()) {
-                    handleAnswer(textInputValue);
-                    setTextInputValue('');
-                  }
+                  handleAnswer(textInputValue.trim() || '');
+                  setTextInputValue('');
                 }}
-                disabled={!textInputValue.trim()}
               >
                 <Text style={styles.submitButtonText}>Continue</Text>
               </TouchableOpacity>
