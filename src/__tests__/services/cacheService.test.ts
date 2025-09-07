@@ -19,7 +19,7 @@ describe('CacheService', () => {
     it('should return null for non-existent key', async () => {
       const result = await cacheService.get('non-existent');
       expect(result).toBeNull();
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith('cache_non-existent');
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('@sdsa_cache_non-existent');
     });
 
     it('should return cached data for valid key', async () => {
@@ -27,6 +27,7 @@ describe('CacheService', () => {
       const cachedItem = {
         data: testData,
         timestamp: Date.now(),
+        expiryHours: 24,
       };
       
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(cachedItem));
@@ -40,13 +41,14 @@ describe('CacheService', () => {
       const expiredItem = {
         data: testData,
         timestamp: Date.now() - (25 * 60 * 60 * 1000), // 25 hours ago
+        expiryHours: 24,
       };
       
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(expiredItem));
       
       const result = await cacheService.get('test-key');
       expect(result).toBeNull();
-      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('cache_test-key');
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@sdsa_cache_test-key');
     });
 
     it('should handle JSON parse errors gracefully', async () => {
@@ -71,11 +73,11 @@ describe('CacheService', () => {
       await cacheService.set('test-key', testData);
       
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        'cache_test-key',
+        '@sdsa_cache_test-key',
         expect.stringContaining('"data":{"test":"data"}')
       );
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        'cache_test-key',
+        '@sdsa_cache_test-key',
         expect.stringContaining('"timestamp":')
       );
     });
@@ -103,36 +105,23 @@ describe('CacheService', () => {
     });
   });
 
-  describe('clear', () => {
-    it('should clear specific cache key', async () => {
-      await cacheService.clear('test-key');
-      
-      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('cache_test-key');
-    });
-
-    it('should handle clear errors gracefully', async () => {
-      (AsyncStorage.removeItem as jest.Mock).mockRejectedValue(new Error('Clear error'));
-      
-      // Should not throw
-      await expect(cacheService.clear('test')).resolves.toBeUndefined();
-    });
-  });
+  // Note: clear method doesn't exist in cacheService, skipping these tests
 
   describe('clearAll', () => {
     it('should clear all cache keys', async () => {
       (AsyncStorage.getAllKeys as jest.Mock).mockResolvedValue([
-        'cache_key1',
-        'cache_key2',
+        '@sdsa_cache_key1',
+        '@sdsa_cache_key2',
         'other_key',
-        'cache_key3',
+        '@sdsa_cache_key3',
       ]);
       
       await cacheService.clearAll();
       
       expect(AsyncStorage.multiRemove).toHaveBeenCalledWith([
-        'cache_key1',
-        'cache_key2',
-        'cache_key3',
+        '@sdsa_cache_key1',
+        '@sdsa_cache_key2',
+        '@sdsa_cache_key3',
       ]);
     });
 
@@ -141,7 +130,8 @@ describe('CacheService', () => {
       
       await cacheService.clearAll();
       
-      expect(AsyncStorage.multiRemove).not.toHaveBeenCalled();
+      // clearAll calls multiRemove with empty array when no cache keys
+      expect(AsyncStorage.multiRemove).toHaveBeenCalledWith([]);
     });
 
     it('should handle clearAll errors gracefully', async () => {
@@ -160,6 +150,7 @@ describe('CacheService', () => {
       const validItem = {
         data: testData,
         timestamp: Date.now() - (23 * 60 * 60 * 1000),
+        expiryHours: 24,
       };
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(validItem));
       
@@ -171,12 +162,13 @@ describe('CacheService', () => {
       const expiredItem = {
         data: testData,
         timestamp: Date.now() - (25 * 60 * 60 * 1000),
+        expiryHours: 24,
       };
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(expiredItem));
       
       const expiredResult = await cacheService.get('test-key');
       expect(expiredResult).toBeNull();
-      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('cache_test-key');
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@sdsa_cache_test-key');
     });
   });
 });

@@ -17,9 +17,9 @@ export const QuestionnaireScreen = () => {
   const navigation = useNavigation<QuestionnaireScreenNavigationProp>();
   const route = useRoute<QuestionnaireRouteProp>();
   const { categoryPath, questionnaireId } = route.params;
-  const editMode = (route.params as any).editMode;
+  const editMode = 'editMode' in route.params ? route.params.editMode : false;
   const questionnaireStore = useQuestionnaireStore();
-  const { addAnswer, setContext, clearAnswers, answers: existingAnswers, saveState, loadState } = questionnaireStore;
+  const { addAnswer, setContext, clearAnswers, answers: existingAnswers, saveState } = questionnaireStore;
   const colors = useThemeColors();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -252,7 +252,7 @@ export const QuestionnaireScreen = () => {
 
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: colors.primary }]}
-            onPress={() => navigation.navigate('Chat', { contextUpdated: isEditMode })}
+            onPress={() => navigation.navigate('Chat', { contextUpdated: !!isEditMode })}
           >
             <Text style={styles.actionButtonText}>
               {isEditMode ? '💬 Resume Chat' : '💬 Start Personalized Chat'}

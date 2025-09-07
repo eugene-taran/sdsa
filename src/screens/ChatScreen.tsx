@@ -71,24 +71,25 @@ export const ChatScreen = () => {
       
       // Generate and show welcome joke
       await showWelcomeJoke();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error initializing Gemini:', error);
       setIsModelReady(false);
       
       let errorText = "Unable to initialize AI assistant. ";
-      if (error?.message?.includes('API key') || !process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
+      const errorMessage = error instanceof Error ? error.message : '';
+      if (errorMessage.includes('API key') || !process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
         errorText += "Please ensure your Gemini API key is configured. Set EXPO_PUBLIC_GEMINI_API_KEY in your .env.local file.";
       } else {
         errorText += "Please check your configuration and try refreshing the page.";
       }
       
-      const errorMessage: Message = {
+      const errorMsgObj: Message = {
         id: Date.now().toString(),
         text: errorText,
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages([errorMessage]);
+      setMessages([errorMsgObj]);
       
       // Try to set model as ready anyway to allow retrying
       setTimeout(() => {
@@ -250,15 +251,16 @@ export const ChatScreen = () => {
           flatListRef.current?.scrollToEnd({ animated: false });
         }
       );
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error generating response:', error);
       let errorText = "I apologize, but I'm having trouble generating a response. ";
+      const errorMsg = error instanceof Error ? error.message : '';
       
-      if (error?.message?.includes('API key')) {
+      if (errorMsg.includes('API key')) {
         errorText += "Please check that your Gemini API key is configured correctly.";
-      } else if (error?.message?.includes('quota') || error?.message?.includes('limit')) {
+      } else if (errorMsg.includes('quota') || errorMsg.includes('limit')) {
         errorText += "It looks like we've hit the API rate limit. Please wait a moment and try again.";
-      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+      } else if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
         errorText += "There seems to be a network issue. Please check your connection and try again.";
       } else {
         errorText += "Please try again in a moment. If the issue persists, check your API configuration.";

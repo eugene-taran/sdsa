@@ -383,12 +383,12 @@ npx expo start --dev-client
 
 ### Code Quality Requirements
 
-**ALWAYS run before finishing any work:**
-- `yarn lint` - Check for ESLint issues
-- `yarn build` or `npx tsc --noEmit` - Verify TypeScript compilation
-- `yarn test` - Run all tests and ensure they pass
+**ALWAYS run ALL three checks before finishing any work:**
+1. `yarn lint` - Check for ESLint issues (must have no errors)
+2. `yarn build` or `npx tsc --noEmit` - Verify TypeScript compilation (must pass)
+3. `yarn test` - Run all tests and ensure they pass (all tests must be green)
 
-These checks must pass before considering any task complete. All tests must be green.
+**IMPORTANT:** These checks must ALL pass before considering any task complete. Never skip any of these checks. If tests are failing, fix them before completing work.
 
 ## Current Focus
 

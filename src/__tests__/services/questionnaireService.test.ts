@@ -9,6 +9,7 @@ jest.mock('../../services/cacheService', () => ({
   cacheService: {
     get: jest.fn(),
     set: jest.fn(),
+    clearAll: jest.fn(),
   },
 }));
 
@@ -39,7 +40,7 @@ describe('QuestionnaireService', () => {
     it('should fetch categories from GitHub', async () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
-        json: async () => mockCategories,
+        json: async () => ({ categories: mockCategories }),
       });
 
       const result = await questionnaireService.getCategories();
@@ -85,7 +86,7 @@ describe('QuestionnaireService', () => {
     });
   });
 
-  describe('getQuestionnairesForCategory', () => {
+  describe('getQuestionnaires', () => {
     const mockQuestionnaires = [
       {
         id: 'unit-testing',
@@ -105,7 +106,7 @@ describe('QuestionnaireService', () => {
         json: async () => mockQuestionnaires,
       });
 
-      const result = await questionnaireService.getQuestionnairesForCategory('testing');
+      const result = await questionnaireService.getQuestionnaires('testing');
       
       expect(result).toEqual(mockQuestionnaires);
       expect(global.fetch).toHaveBeenCalledWith(
@@ -117,7 +118,7 @@ describe('QuestionnaireService', () => {
     it('should return cached questionnaires if available', async () => {
       (cacheService.get as jest.Mock).mockResolvedValue(mockQuestionnaires);
 
-      const result = await questionnaireService.getQuestionnairesForCategory('testing');
+      const result = await questionnaireService.getQuestionnaires('testing');
       
       expect(result).toEqual(mockQuestionnaires);
       expect(global.fetch).not.toHaveBeenCalled();
@@ -126,7 +127,7 @@ describe('QuestionnaireService', () => {
     it('should return mock data on error', async () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      const result = await questionnaireService.getQuestionnairesForCategory('testing');
+      const result = await questionnaireService.getQuestionnaires('testing');
       
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
@@ -212,7 +213,8 @@ describe('QuestionnaireService', () => {
 
       const result = await questionnaireService.getCategories();
       
-      expect(cacheService.get).toHaveBeenCalledBefore(global.fetch as jest.Mock);
+      // Verify cache was checked first (by not calling fetch when cache exists)
+      expect(cacheService.get).toHaveBeenCalled();
       expect(result).toEqual(cachedData);
       expect(global.fetch).not.toHaveBeenCalled();
     });

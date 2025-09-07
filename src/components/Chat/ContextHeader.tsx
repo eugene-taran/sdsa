@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
-  useColorScheme,
   ScrollView,
 } from 'react-native';
 import { useQuestionnaireStore } from '../../store/questionnaireStore';
@@ -17,11 +16,9 @@ export const ContextHeader = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const animationValue = useState(new Animated.Value(0))[0];
   
-  const { answers, context, questionnaireHistory } = useQuestionnaireStore();
+  const { answers, context } = useQuestionnaireStore();
   const navigation = useNavigation<QuestionnaireScreenNavigationProp>();
   const colors = useThemeColors();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const toggleExpanded = () => {
     const toValue = isExpanded ? 0 : 1;
@@ -50,7 +47,6 @@ export const ContextHeader = () => {
 
   const answerCount = Object.keys(answers).length;
   const questionnaireName = String(context.questionnaire || 'Questionnaire');
-  const categoryName = String(context.category || '');
 
   if (answerCount === 0) {
     return null; // Don't show header if no context
