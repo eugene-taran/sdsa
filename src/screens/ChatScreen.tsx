@@ -15,18 +15,11 @@ import {
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useQuestionnaireStore } from '../store/questionnaireStore';
+import { useChatHistoryStore, createChatKey, type Message } from '../store/chatHistoryStore';
 import { geminiService, QuestionnaireContext } from '../services/geminiService';
 import { useThemeColors } from '../utils/colors';
 import { ImageModal } from '../components/ImageModal';
 import { ContextHeader } from '../components/Chat/ContextHeader';
-
-interface Message {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: Date;
-  image?: string; // Base64 image data URL
-}
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -48,11 +41,32 @@ export const ChatScreen = () => {
   const isDark = colorScheme === 'dark';
 
   const { questionnaireHistory, answers, context } = useQuestionnaireStore();
+  const { saveMessages, getMessages } = useChatHistoryStore();
+  
+  // Create unique key for this questionnaire/category combo
+  // Ensure we only pass string or number values to createChatKey
+  const questionnaireId = typeof context.questionnaireId === 'string' || typeof context.questionnaireId === 'number' 
+    ? context.questionnaireId 
+    : undefined;
+  const category = typeof context.category === 'string' || typeof context.category === 'number'
+    ? context.category
+    : undefined;
+  const chatKey = createChatKey(questionnaireId, category);
 
   useEffect(() => {
-    initializeModel();
+    // Load existing messages if available
+    const existingMessages = getMessages(chatKey);
+    if (existingMessages && existingMessages.length > 0) {
+      setMessages(existingMessages);
+      setHasShownWelcome(true); // Don't show welcome again
+      setIsInitializing(false);
+      setIsModelReady(true);
+    } else {
+      // No existing messages, initialize normally
+      initializeModel();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [chatKey]);
 
   useEffect(() => {
     // Handle context updates from questionnaire edit
@@ -61,6 +75,14 @@ export const ChatScreen = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.params?.contextUpdated]);
+
+  useEffect(() => {
+    // Save messages whenever they change (except on initial load)
+    if (messages.length > 0) {
+      saveMessages(chatKey, messages);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, chatKey]);
 
   const initializeModel = async () => {
     try {
