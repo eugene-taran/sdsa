@@ -22,10 +22,13 @@ export type ContextValue =
   | ContextValue[]
   | { [key: string]: ContextValue };
 
-export interface JourneyState {
+export interface QuestionnaireState {
   currentBlockId: string;
-  path: string[];
+  questionnaireHistory: string[];
   answers: Record<string, string>;
   context: Record<string, ContextValue>;
   resources: string[];
 }
+
+// Keep JourneyState as deprecated alias for backward compatibility
+export type JourneyState = QuestionnaireState;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, TextInput } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { useJourneyStore } from '../store/journeyStore';
-import { JourneyScreenNavigationProp } from '../types/navigation';
+import { useQuestionnaireStore } from '../store/questionnaireStore';
+import { QuestionnaireScreenNavigationProp } from '../types/navigation';
 import { questionnaireService } from '../services/questionnaireService';
 import { Questionnaire, Question } from '../types/questionnaire';
 import { useThemeColors } from '../utils/colors';
@@ -14,10 +14,12 @@ type RootStackParamList = {
 type QuestionnaireRouteProp = RouteProp<RootStackParamList, 'Questionnaire'>;
 
 export const QuestionnaireScreen = () => {
-  const navigation = useNavigation<JourneyScreenNavigationProp>();
+  const navigation = useNavigation<QuestionnaireScreenNavigationProp>();
   const route = useRoute<QuestionnaireRouteProp>();
   const { categoryPath, questionnaireId } = route.params;
-  const { addAnswer, setContext, clearAnswers } = useJourneyStore();
+  const editMode = (route.params as any).editMode;
+  const questionnaireStore = useQuestionnaireStore();
+  const { addAnswer, setContext, clearAnswers, answers: existingAnswers, saveState, loadState } = questionnaireStore;
   const colors = useThemeColors();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -25,6 +27,7 @@ export const QuestionnaireScreen = () => {
   const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [journey, setJourney] = useState<string[]>([]);
+  const [isEditMode] = useState(editMode || false);
   const [isComplete, setIsComplete] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,16 +38,30 @@ export const QuestionnaireScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryPath, questionnaireId]);
 
+  useEffect(() => {
+    // Restore answers if in edit mode
+    if (isEditMode && existingAnswers && questionnaire) {
+      const restoredJourney = Object.keys(existingAnswers);
+      setJourney(restoredJourney);
+      // Start from the beginning to allow editing all answers
+      setCurrentQuestionIndex(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, questionnaire]);
+
   const loadQuestionnaire = async () => {
     try {
       setLoading(true);
       setError(null);
-      clearAnswers();
+      if (!isEditMode) {
+        clearAnswers();
+      }
       const data = await questionnaireService.getQuestionnaire(categoryPath, questionnaireId);
       if (data) {
         setQuestionnaire(data);
         setContext('questionnaire', data.title);
         setContext('category', categoryPath);
+        setContext('questionnaireId', questionnaireId);
       } else {
         setError('Questionnaire not found');
       }
@@ -63,7 +80,7 @@ export const QuestionnaireScreen = () => {
     return questionnaire.questions[currentQuestionIndex];
   };
 
-  const handleAnswer = (answer: string) => {
+  const handleAnswer = async (answer: string) => {
     const currentQuestion = getCurrentQuestion();
     if (!currentQuestion) return;
 
@@ -72,6 +89,9 @@ export const QuestionnaireScreen = () => {
 
     // Store in global state
     addAnswer(currentQuestion.label, answer);
+    
+    // Auto-save after each answer
+    await saveState();
 
     // Check if journey is complete
     if (currentQuestionIndex >= (questionnaire?.questions.length || 0) - 1) {
@@ -214,19 +234,29 @@ export const QuestionnaireScreen = () => {
 
       {isComplete && (
         <View style={[styles.completionContainer, { backgroundColor: colors.card }]}>
-          <Text style={[styles.completionTitle, { color: colors.success }]}>🎉 Questionnaire Complete!</Text>
+          <Text style={[styles.completionTitle, { color: colors.success }]}>
+            {isEditMode ? '✅ Context Updated!' : '🎉 Questionnaire Complete!'}
+          </Text>
           <Text style={[styles.completionText, { color: colors.text }]}>
-            Great job completing the {questionnaire.title} questionnaire!
+            {isEditMode 
+              ? `Your answers have been updated for ${questionnaire.title}.`
+              : `Great job completing the ${questionnaire.title} questionnaire!`
+            }
           </Text>
           <Text style={[styles.completionSubtext, { color: colors.secondaryText }]}>
-            Based on your answers, I can now provide personalized guidance.
+            {isEditMode
+              ? 'Return to chat with your updated context.'
+              : 'Based on your answers, I can now provide personalized guidance.'
+            }
           </Text>
 
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: colors.primary }]}
-            onPress={() => navigation.navigate('Chat')}
+            onPress={() => navigation.navigate('Chat', { contextUpdated: isEditMode })}
           >
-            <Text style={styles.actionButtonText}>💬 Start Personalized Chat</Text>
+            <Text style={styles.actionButtonText}>
+              {isEditMode ? '💬 Resume Chat' : '💬 Start Personalized Chat'}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity

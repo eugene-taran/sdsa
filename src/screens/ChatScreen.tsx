@@ -13,10 +13,12 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { useJourneyStore } from '../store/journeyStore';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import { useQuestionnaireStore } from '../store/questionnaireStore';
 import { geminiService, QuestionnaireContext } from '../services/geminiService';
 import { useThemeColors } from '../utils/colors';
 import { ImageModal } from '../components/ImageModal';
+import { ContextHeader } from '../components/Chat/ContextHeader';
 
 interface Message {
   id: string;
@@ -28,7 +30,10 @@ interface Message {
 
 const { width: screenWidth } = Dimensions.get('window');
 
+type ChatRouteProp = RouteProp<{ Chat: { contextUpdated?: boolean } }, 'Chat'>;
+
 export const ChatScreen = () => {
+  const route = useRoute<ChatRouteProp>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -42,12 +47,20 @@ export const ChatScreen = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
-  const { path, answers, context } = useJourneyStore();
+  const { questionnaireHistory, answers, context } = useQuestionnaireStore();
 
   useEffect(() => {
     initializeModel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // Handle context updates from questionnaire edit
+    if (route.params?.contextUpdated) {
+      handleContextUpdate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params?.contextUpdated]);
 
   const initializeModel = async () => {
     try {
@@ -83,6 +96,25 @@ export const ChatScreen = () => {
       }, 2000);
     } finally {
       setIsInitializing(false);
+    }
+  };
+
+  const handleContextUpdate = async () => {
+    try {
+      // Add a message indicating context was updated
+      const updateMessage: Message = {
+        id: `update-${Date.now()}`,
+        text: "✅ I've updated my understanding based on your revised answers. How can I help you with your updated context?",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, updateMessage]);
+      
+      // Refresh the AI context
+      const questionnaireContext = buildQuestionnaireContext();
+      await geminiService.refreshContext(questionnaireContext);
+    } catch (error) {
+      console.error('Error updating context:', error);
     }
   };
 
@@ -140,7 +172,7 @@ export const ChatScreen = () => {
 
   const _buildJourneyContext = () => {
     // Build a summary of the user's journey
-    const topic = path[0] || 'general development';
+    const topic = questionnaireHistory[0] || 'general development';
     const choices = Object.entries(answers)
       .map(([question, answer]) => `${question}: ${answer}`)
       .join(', ');
@@ -148,7 +180,7 @@ export const ChatScreen = () => {
     return {
       topic,
       summary: choices || 'getting started',
-      fullContext: { path, answers, context },
+      fullContext: { questionnaireHistory, answers, context },
     };
   };
 
@@ -296,6 +328,7 @@ export const ChatScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <ContextHeader />
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

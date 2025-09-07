@@ -386,8 +386,9 @@ npx expo start --dev-client
 **ALWAYS run before finishing any work:**
 - `yarn lint` - Check for ESLint issues
 - `yarn build` or `npx tsc --noEmit` - Verify TypeScript compilation
+- `yarn test` - Run all tests and ensure they pass
 
-These checks must pass before considering any task complete.
+These checks must pass before considering any task complete. All tests must be green.
 
 ## Current Focus
 

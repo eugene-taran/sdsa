@@ -70,6 +70,11 @@ class GeminiService {
   /**
    * Generate an image with a joke about the topic
    */
+  async refreshContext(newContext: QuestionnaireContext): Promise<void> {
+    // Re-initialize with new context which will clear the old session
+    await this.initializeChat(newContext);
+  }
+
   async generateJokeImage(topic: string): Promise<string | null> {
     if (!this.genAI) {
       throw new Error('Gemini service not initialized. Call initialize() first.');

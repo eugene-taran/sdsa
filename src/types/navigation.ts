@@ -3,13 +3,23 @@ import { RouteProp } from '@react-navigation/native';
 
 export type RootStackParamList = {
   Home: undefined;
-  Journey: { topicId: string };
+  Questionnaire: { 
+    topicId: string;
+    categoryPath?: string;
+    editMode?: boolean;
+  };
   Resource: { resourcePath: string };
-  Chat: undefined;
+  Chat: { 
+    contextUpdated?: boolean;
+  } | undefined;
 };
 
 export type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
-export type JourneyScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Journey'>;
-export type JourneyScreenRouteProp = RouteProp<RootStackParamList, 'Journey'>;
+export type QuestionnaireScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Questionnaire'>;
+export type QuestionnaireScreenRouteProp = RouteProp<RootStackParamList, 'Questionnaire'>;
+
+// Keep deprecated aliases for backward compatibility
+export type JourneyScreenNavigationProp = QuestionnaireScreenNavigationProp;
+export type JourneyScreenRouteProp = QuestionnaireScreenRouteProp;
 export type ResourceScreenRouteProp = RouteProp<RootStackParamList, 'Resource'>;
 export type ChatScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Chat'>;
