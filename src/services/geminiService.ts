@@ -138,10 +138,14 @@ class GeminiService {
   }
 
   /**
-   * Main chat function using Gemini Flash 2.0 v2
+   * Main chat function using Gemini Flash 2.5 with streaming
    * Maintains context from questionnaire and conversation history
    */
-  async chat(userInput: string, context?: QuestionnaireContext): Promise<string> {
+  async chatStream(
+    userInput: string, 
+    context?: QuestionnaireContext,
+    onChunk?: (text: string) => void
+  ): Promise<string> {
     if (!this.genAI) {
       throw new Error('Gemini service not initialized. Call initialize() first.');
     }
@@ -179,20 +183,45 @@ ${conversationContext}
 Please provide a helpful, specific response to the user's latest message.`;
 
     try {
-      const result = await this.genAI.models.generateContent({
+      // Use streaming API
+      const stream = await this.genAI.models.generateContentStream({
         model: this.chatModelName,
         contents: fullPrompt,
       });
-      const responseText = result.text || 'I apologize, but I had trouble generating a response. Please try again.';
+      
+      let fullResponse = '';
+      
+      // Process stream chunks
+      for await (const chunk of stream) {
+        const chunkText = chunk.text || '';
+        fullResponse += chunkText;
+        
+        // Call the callback with the new chunk
+        if (onChunk && chunkText) {
+          onChunk(chunkText);
+        }
+      }
+      
+      // If no response was generated, use fallback
+      if (!fullResponse) {
+        fullResponse = 'I apologize, but I had trouble generating a response. Please try again.';
+      }
       
       // Add assistant response to history
-      this.chatHistory.push({ role: 'assistant', content: responseText });
+      this.chatHistory.push({ role: 'assistant', content: fullResponse });
       
-      return responseText;
+      return fullResponse;
     } catch (error) {
       console.error('Error in chat:', error);
       throw new Error('Failed to generate response. Please try again.');
     }
+  }
+
+  /**
+   * Legacy non-streaming chat function
+   */
+  async chat(userInput: string, context?: QuestionnaireContext): Promise<string> {
+    return this.chatStream(userInput, context);
   }
 
   /**

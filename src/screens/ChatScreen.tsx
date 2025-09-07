@@ -111,6 +111,11 @@ export const ChatScreen = () => {
       
       setMessages(messagesToAdd);
       setHasShownWelcome(true);
+      
+      // Scroll to show welcome message
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 300);
     } catch (error) {
       console.error('Error generating welcome:', error);
       // Fallback to a simple welcome message
@@ -143,7 +148,7 @@ export const ChatScreen = () => {
   const buildQuestionnaireContext = (): QuestionnaireContext => {
     // Build context for Gemini service
     // Use the questionnaire title from context, or category name, or fallback
-    const topic = context.questionnaire || context.category || 'Software Development';
+    const topic = String(context.questionnaire || context.category || 'Software Development');
     
     // Convert answers to array format expected by Gemini
     const formattedAnswers = Object.entries(answers).map(([question, answer]) => ({
@@ -170,24 +175,42 @@ export const ChatScreen = () => {
       timestamp: new Date(),
     };
 
+    const aiMessageId = (Date.now() + 1).toString();
+    
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
 
+    // Add placeholder AI message that will be updated via streaming
+    const aiMessage: Message = {
+      id: aiMessageId,
+      text: '',
+      isUser: false,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, aiMessage]);
+
     try {
       const questionnaireContext = buildQuestionnaireContext();
       
-      // Use Gemini Flash 2.0 for the main chat
-      const response = await geminiService.chat(inputText, questionnaireContext);
-
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response,
-        isUser: false,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
+      // Use streaming chat with callback to update message in real-time
+      await geminiService.chatStream(
+        inputText, 
+        questionnaireContext,
+        (chunk: string) => {
+          // Update the AI message with new chunks
+          setMessages((prev) => 
+            prev.map((msg) => 
+              msg.id === aiMessageId 
+                ? { ...msg, text: msg.text + chunk }
+                : msg
+            )
+          );
+          
+          // Immediate scroll to bottom as text streams in
+          flatListRef.current?.scrollToEnd({ animated: false });
+        }
+      );
     } catch (error: any) {
       console.error('Error generating response:', error);
       let errorText = "I apologize, but I'm having trouble generating a response. ";
@@ -211,12 +234,11 @@ export const ChatScreen = () => {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      // Final scroll to bottom after message is complete
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 200);
     }
-
-    // Scroll to bottom
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
   };
 
   const renderMessage = ({ item }: { item: Message }) => (
@@ -260,24 +282,35 @@ export const ChatScreen = () => {
   );
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={90}
-    >
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messagesContainer}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-      />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[styles.messagesContainer, { paddingBottom: 20 }]}
+          style={styles.flatList}
+          onContentSizeChange={() => {
+            // Always scroll to bottom when content changes
+            flatListRef.current?.scrollToEnd({ animated: false });
+          }}
+          onLayout={() => {
+            // Scroll on initial layout
+            setTimeout(() => {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }, 50);
+          }}
+        />
 
       {isLoading && (
         <View style={[styles.loadingContainer, { backgroundColor: colors.card }]}>
           <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.secondaryText }]}>AI is thinking...</Text>
+          <Text style={[styles.loadingText, { color: colors.secondaryText }]}>AI is typing...</Text>
         </View>
       )}
 
@@ -310,13 +343,20 @@ export const ChatScreen = () => {
         >
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  flatList: {
     flex: 1,
   },
   messagesContainer: {

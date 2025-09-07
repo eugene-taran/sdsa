@@ -24,15 +24,25 @@ export default function App() {
       style.innerHTML = `
         body {
           overflow: auto !important;
+          height: 100%;
+        }
+        html {
+          height: 100%;
         }
         #root {
-          min-height: 100vh;
-          height: auto !important;
-        }
-        /* Ensure ScrollView works properly */
-        div[data-testid="ScrollView"] {
           height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        /* Ensure ScrollView and FlatList work properly */
+        div[data-testid="ScrollView"], 
+        div[data-testid="FlatList"] {
+          flex: 1;
           overflow: auto !important;
+        }
+        /* Fix for RN Web FlatList */
+        div[dir="ltr"] {
+          height: 100%;
         }
       `;
       document.head.appendChild(style);
