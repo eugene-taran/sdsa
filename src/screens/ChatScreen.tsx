@@ -10,6 +10,8 @@ import {
   Platform,
   ActivityIndicator,
   useColorScheme,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { useJourneyStore } from '../store/journeyStore';
 import { geminiService, QuestionnaireContext } from '../services/geminiService';
@@ -20,7 +22,10 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  image?: string; // Base64 image data URL
 }
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export const ChatScreen = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -48,17 +53,29 @@ export const ChatScreen = () => {
       
       // Generate and show welcome joke
       await showWelcomeJoke();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initializing Gemini:', error);
-      // Try to initialize without showing error, user might need to add API key
       setIsModelReady(false);
+      
+      let errorText = "Unable to initialize AI assistant. ";
+      if (error?.message?.includes('API key') || !process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
+        errorText += "Please ensure your Gemini API key is configured. Set EXPO_PUBLIC_GEMINI_API_KEY in your .env.local file.";
+      } else {
+        errorText += "Please check your configuration and try refreshing the page.";
+      }
+      
       const errorMessage: Message = {
         id: Date.now().toString(),
-        text: "Please ensure Gemini API key is configured. You can set it in the app settings or as EXPO_PUBLIC_GEMINI_API_KEY environment variable.",
+        text: errorText,
         isUser: false,
         timestamp: new Date(),
       };
       setMessages([errorMessage]);
+      
+      // Try to set model as ready anyway to allow retrying
+      setTimeout(() => {
+        setIsModelReady(true);
+      }, 2000);
     }
   };
 
@@ -68,24 +85,39 @@ export const ChatScreen = () => {
     try {
       const questionnaireContext = buildQuestionnaireContext();
       
-      // Initialize chat with context and get welcome joke
-      const welcomeMessage = await geminiService.initializeChat(questionnaireContext);
+      // Initialize chat with context and get welcome with optional image
+      const welcome = await geminiService.initializeChat(questionnaireContext);
       
-      const jokeMessage: Message = {
-        id: '1',
-        text: welcomeMessage,
+      const messagesToAdd: Message[] = [];
+      
+      // Add image message if available
+      if (welcome.image) {
+        messagesToAdd.push({
+          id: '1',
+          text: '',
+          image: welcome.image,
+          isUser: false,
+          timestamp: new Date(),
+        });
+      }
+      
+      // Add welcome text message
+      messagesToAdd.push({
+        id: welcome.image ? '2' : '1',
+        text: welcome.message,
         isUser: false,
         timestamp: new Date(),
-      };
+      });
       
-      setMessages([jokeMessage]);
+      setMessages(messagesToAdd);
       setHasShownWelcome(true);
     } catch (error) {
-      console.error('Error generating welcome joke:', error);
+      console.error('Error generating welcome:', error);
       // Fallback to a simple welcome message
+      const topic = context.questionnaire || context.category || 'new technologies';
       const fallbackMessage: Message = {
         id: '1',
-        text: `Welcome! I see you've completed the questionnaire about ${path[0] || 'software development'}. I'm here to help guide you through your learning journey. What would you like to know?`,
+        text: `Learning ${topic} can be challenging, but that's what makes it rewarding! I'm here to help guide you through your journey. What would you like to learn or improve in your current process?`,
         isUser: false,
         timestamp: new Date(),
       };
@@ -110,7 +142,8 @@ export const ChatScreen = () => {
 
   const buildQuestionnaireContext = (): QuestionnaireContext => {
     // Build context for Gemini service
-    const topic = path[0] || 'Software Development';
+    // Use the questionnaire title from context, or category name, or fallback
+    const topic = context.questionnaire || context.category || 'Software Development';
     
     // Convert answers to array format expected by Gemini
     const formattedAnswers = Object.entries(answers).map(([question, answer]) => ({
@@ -155,11 +188,23 @@ export const ChatScreen = () => {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating response:', error);
+      let errorText = "I apologize, but I'm having trouble generating a response. ";
+      
+      if (error?.message?.includes('API key')) {
+        errorText += "Please check that your Gemini API key is configured correctly.";
+      } else if (error?.message?.includes('quota') || error?.message?.includes('limit')) {
+        errorText += "It looks like we've hit the API rate limit. Please wait a moment and try again.";
+      } else if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+        errorText += "There seems to be a network issue. Please check your connection and try again.";
+      } else {
+        errorText += "Please try again in a moment. If the issue persists, check your API configuration.";
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm sorry, I couldn't generate a response. Please try again.",
+        text: errorText,
         isUser: false,
         timestamp: new Date(),
       };
@@ -183,20 +228,34 @@ export const ChatScreen = () => {
           backgroundColor: colors.card,
           borderColor: colors.border,
         }
-      ]
+      ],
+      item.image && !item.text && styles.imageMessageContainer
     ]}>
-      <Text style={[
-        styles.messageText,
-        item.isUser ? styles.userMessageText : { color: colors.text }
-      ]}>
-        {item.text}
-      </Text>
-      <Text style={[
-        styles.timestamp,
-        { color: item.isUser ? 'rgba(255,255,255,0.7)' : colors.secondaryText }
-      ]}>
-        {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </Text>
+      {item.image && (
+        <TouchableOpacity activeOpacity={0.9}>
+          <Image 
+            source={{ uri: item.image }}
+            style={styles.messageImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      )}
+      {item.text ? (
+        <Text style={[
+          styles.messageText,
+          item.isUser ? styles.userMessageText : { color: colors.text }
+        ]}>
+          {item.text}
+        </Text>
+      ) : null}
+      {(item.text || !item.image) && (
+        <Text style={[
+          styles.timestamp,
+          { color: item.isUser ? 'rgba(255,255,255,0.7)' : colors.secondaryText }
+        ]}>
+          {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      )}
     </View>
   );
 
@@ -327,5 +386,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  imageMessageContainer: {
+    padding: 0,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  messageImage: {
+    width: Math.min(screenWidth * 0.65, 260),
+    height: Math.min(screenWidth * 0.45, 180),
+    borderRadius: 10,
+    marginBottom: 8,
   },
 });

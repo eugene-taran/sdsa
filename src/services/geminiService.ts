@@ -1,12 +1,11 @@
 /**
- * Gemini Service for AI-powered chat and joke generation
+ * Gemini Service for AI-powered chat and image generation
  * 
  * Uses Google's Gemini models:
- * - Gemini 2.5 Flash Image Preview: Quick joke generation
- * - Gemini Flash 2.5: Main chat functionality
+ * - gemini-2.0-flash-v2: Image generation and main chat functionality
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ChatMessage {
@@ -22,11 +21,11 @@ interface QuestionnaireContext {
 }
 
 class GeminiService {
-  private genAI: GoogleGenerativeAI | null = null;
-  private nanoModel: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null;
-  private flashModel: ReturnType<GoogleGenerativeAI['getGenerativeModel']> | null = null;
+  private genAI: GoogleGenAI | null = null;
   private apiKey: string | null = null;
   private chatHistory: ChatMessage[] = [];
+  private imageModelName: string = 'gemini-2.5-flash-image-preview';
+  private chatModelName: string = 'gemini-2.5-flash';
 
   /**
    * Initialize Gemini service with API key
@@ -39,16 +38,11 @@ class GeminiService {
       throw new Error('Gemini API key not found. Please provide an API key.');
     }
 
-    this.genAI = new GoogleGenerativeAI(this.apiKey);
+    this.genAI = new GoogleGenAI({ apiKey: this.apiKey });
     
-    // Initialize models
-    this.nanoModel = this.genAI.getGenerativeModel({ 
-      model: process.env.EXPO_PUBLIC_GEMINI_JOKE_MODEL || 'gemini-2.5-flash-image-preview'
-    });
-    
-    this.flashModel = this.genAI.getGenerativeModel({ 
-      model: process.env.EXPO_PUBLIC_GEMINI_FLASH_MODEL || 'gemini-2.5-flash' 
-    });
+    // Set model names
+    this.imageModelName = process.env.EXPO_PUBLIC_GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview';
+    this.chatModelName = process.env.EXPO_PUBLIC_GEMINI_CHAT_MODEL || 'gemini-2.5-flash';
 
     // Service initialized successfully
   }
@@ -74,44 +68,81 @@ class GeminiService {
   }
 
   /**
-   * Generate a welcome joke after questionnaire completion
-   * Uses Gemini 2.5 Flash Image Preview for quick generation
+   * Generate an image with a joke about the topic
    */
-  async generateWelcomeJoke(topic: string, difficulty?: string): Promise<string> {
-    if (!this.nanoModel) {
+  async generateJokeImage(topic: string): Promise<string | null> {
+    if (!this.genAI) {
       throw new Error('Gemini service not initialized. Call initialize() first.');
     }
 
-    const prompt = `Generate a short, friendly, and encouraging message about learning ${topic}. 
-    ${difficulty ? `This is a ${difficulty} level topic.` : ''}
-    
-    Structure:
-    1. First, acknowledge that learning ${topic} can be challenging
-    2. Then add ONE short, light-hearted programming joke related to ${topic}
-    3. End with an encouraging note
-    
-    Keep it brief (2-3 sentences total), friendly, and motivating.
-    
-    Example format:
-    "Learning [topic] isn't always easy! [relevant joke]. But don't worry, I'm here to help guide you through it!"`;
+    const imagePrompt = `Create an image with a joke about learning ${topic}. The image should be fun, light-hearted, and encouraging. Include visual elements that represent ${topic} in a humorous way. Make it colorful and engaging.`;
 
     try {
-      const result = await this.nanoModel.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      const result = await this.genAI.models.generateContent({
+        model: this.imageModelName,
+        contents: imagePrompt,
+      });
+      const response = result;
+      
+      // Check if response contains generated content
+      if (response.candidates && response.candidates[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData?.mimeType?.startsWith('image/')) {
+            // Return base64 image data with proper data URL format
+            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+          }
+        }
+      }
+      
+      // If no image in response, try to extract base64 from text
+      const text = response.text;
+      if (text && text.includes('data:image')) {
+        return text;
+      }
+      
+      return null;
     } catch (error) {
-      console.error('Error generating joke:', error);
-      // Fallback message if joke generation fails
-      return `Learning ${topic} can be challenging, but that's what makes it rewarding! I'm here to help guide you through your journey. Let's tackle this together!`;
+      console.error('Error generating joke image:', error);
+      return null;
     }
   }
 
   /**
-   * Main chat function using Gemini Flash 2.5
+   * Generate a welcome message after questionnaire completion
+   */
+  async generateWelcomeMessage(topic: string, hasImage: boolean): Promise<string> {
+    if (!this.genAI) {
+      throw new Error('Gemini service not initialized. Call initialize() first.');
+    }
+
+    const prompt = hasImage 
+      ? `Generate a friendly welcome message for someone starting to learn ${topic}. Say: "We know learning ${topic} isn't easy! Here's a little humor to get us started. Let's begin - what would you like to learn or improve in your current ${topic} process?" Keep it exactly like this but you can adjust the topic name to fit naturally.`
+      : `Generate a friendly welcome message for someone starting to learn ${topic}. Acknowledge it can be challenging and ask what they'd like to learn or improve in their current process. Keep it encouraging and conversational.`;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.chatModelName,
+        contents: prompt,
+      });
+      return result.text || this.getFallbackWelcome(topic, hasImage);
+    } catch (error) {
+      console.error('Error generating welcome message:', error);
+      return this.getFallbackWelcome(topic, hasImage);
+    }
+  }
+
+  private getFallbackWelcome(topic: string, hasImage: boolean): string {
+    return hasImage
+      ? `We know learning ${topic} isn't easy! Here's a little humor to get us started. Let's begin - what would you like to learn or improve in your current process?`
+      : `Learning ${topic} can be challenging, but that's what makes it rewarding! I'm here to help guide you through your journey. What would you like to learn or improve in your current process?`;
+  }
+
+  /**
+   * Main chat function using Gemini Flash 2.0 v2
    * Maintains context from questionnaire and conversation history
    */
   async chat(userInput: string, context?: QuestionnaireContext): Promise<string> {
-    if (!this.flashModel) {
+    if (!this.genAI) {
       throw new Error('Gemini service not initialized. Call initialize() first.');
     }
 
@@ -148,9 +179,11 @@ ${conversationContext}
 Please provide a helpful, specific response to the user's latest message.`;
 
     try {
-      const result = await this.flashModel.generateContent(fullPrompt);
-      const response = await result.response;
-      const responseText = response.text();
+      const result = await this.genAI.models.generateContent({
+        model: this.chatModelName,
+        contents: fullPrompt,
+      });
+      const responseText = result.text || 'I apologize, but I had trouble generating a response. Please try again.';
       
       // Add assistant response to history
       this.chatHistory.push({ role: 'assistant', content: responseText });
@@ -177,21 +210,24 @@ Please provide a helpful, specific response to the user's latest message.`;
   }
 
   /**
-   * Set initial context and generate welcome message
+   * Set initial context and generate welcome with optional image
    */
-  async initializeChat(context: QuestionnaireContext): Promise<string> {
+  async initializeChat(context: QuestionnaireContext): Promise<{ message: string; image?: string }> {
     this.clearHistory();
     
-    // Generate welcome joke
-    const welcomeJoke = await this.generateWelcomeJoke(
-      context.title,
-      context.answers.find((a) => a.question?.toLowerCase().includes('experience'))?.value as string | undefined
-    );
+    // Try to generate joke image
+    const jokeImage = await this.generateJokeImage(context.title);
     
-    // Add joke as first message in history
-    this.chatHistory.push({ role: 'assistant', content: welcomeJoke });
+    // Generate welcome message based on whether we have an image
+    const welcomeMessage = await this.generateWelcomeMessage(context.title, !!jokeImage);
     
-    return welcomeJoke;
+    // Add message to history
+    this.chatHistory.push({ role: 'assistant', content: welcomeMessage });
+    
+    return {
+      message: welcomeMessage,
+      image: jokeImage || undefined
+    };
   }
 
   /**
@@ -206,8 +242,6 @@ Please provide a helpful, specific response to the user's latest message.`;
    */
   async cleanup(): Promise<void> {
     this.genAI = null;
-    this.nanoModel = null;
-    this.flashModel = null;
     this.chatHistory = [];
     // Service cleaned up
   }

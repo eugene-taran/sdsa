@@ -45,7 +45,7 @@ export const useJourneyStore = create<JourneyStore>((set) => ({
   reset: () => set(initialState),
 
   clearAnswers: () =>
-    set((state) => ({
+    set(() => ({
       path: [],
       answers: {},
       resources: [],

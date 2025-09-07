@@ -270,20 +270,22 @@ sdsa/
 ### Gemini Integration
 
 ```typescript
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 // Initialize Gemini clients
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const jokeModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image-preview' });
-const flashModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const imageModel = 'gemini-2.5-flash-image-preview';  // For image generation
+const chatModel = 'gemini-2.5-flash';  // For chat/text generation
 
 // Generate initial joke after questionnaire completion
 async function generateWelcomeJoke(topic: string): Promise<string> {
-  const prompt = `Generate a short, friendly joke about learning ${topic}. 
-    Start with acknowledging that learning ${topic} isn't easy, then add a light-hearted joke.`;
+  const prompt = `Create an image with a joke about learning ${topic}.`;
   
-  const result = await jokeModel.generateContent(prompt);
-  return result.response.text();
+  const result = await genAI.models.generateContent({
+    model: imageModel,
+    contents: prompt,
+  });
+  return result.text;
 }
 
 // Main chat with Gemini Flash 2.5
