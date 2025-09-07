@@ -16,6 +16,7 @@ import {
 import { useJourneyStore } from '../store/journeyStore';
 import { geminiService, QuestionnaireContext } from '../services/geminiService';
 import { useThemeColors } from '../utils/colors';
+import { ImageModal } from '../components/ImageModal';
 
 interface Message {
   id: string;
@@ -33,6 +34,8 @@ export const ChatScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isModelReady, setIsModelReady] = useState(false);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const colors = useThemeColors();
   const colorScheme = useColorScheme();
@@ -254,7 +257,13 @@ export const ChatScreen = () => {
       item.image && !item.text && styles.imageMessageContainer
     ]}>
       {item.image && (
-        <TouchableOpacity activeOpacity={0.9}>
+        <TouchableOpacity 
+          activeOpacity={0.9}
+          onPress={() => {
+            setSelectedImage(item.image || null);
+            setIsImageModalVisible(true);
+          }}
+        >
           <Image 
             source={{ uri: item.image }}
             style={styles.messageImage}
@@ -345,6 +354,15 @@ export const ChatScreen = () => {
         </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+      
+      <ImageModal
+        visible={isImageModalVisible}
+        imageUri={selectedImage}
+        onClose={() => {
+          setIsImageModalVisible(false);
+          setSelectedImage(null);
+        }}
+      />
     </View>
   );
 };

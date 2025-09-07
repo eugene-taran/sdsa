@@ -379,6 +379,16 @@ eas build --profile development --platform android
 npx expo start --dev-client
 ```
 
+## Development Guidelines
+
+### Code Quality Requirements
+
+**ALWAYS run before finishing any work:**
+- `yarn lint` - Check for ESLint issues
+- `yarn build` or `npx tsc --noEmit` - Verify TypeScript compilation
+
+These checks must pass before considering any task complete.
+
 ## Current Focus
 
 **BUILD THE QUESTIONNAIRE SYSTEM FIRST**
