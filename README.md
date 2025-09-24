@@ -81,7 +81,7 @@ For development, you can pre-configure your API key:
 cp .env.example .env.local
 
 # Add your API key (optional)
-echo "GEMINI_API_KEY=AIzaSyCv4MzuaKkumhfcDdGe6W96XSc_PO-wA-o" >> .env.local
+echo "GEMINI_API_KEY=your-api-key" >> .env.local
 
 # Start the app
 yarn start
