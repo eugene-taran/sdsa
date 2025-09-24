@@ -32,7 +32,7 @@ jest.mock('expo-constants', () => ({
 }));
 
 // Mock environment variables
-process.env.EXPO_PUBLIC_GEMINI_API_KEY = 'test-api-key';
+process.env.GEMINI_API_KEY = 'test-api-key';
 
 // Silence console warnings during tests
 const originalWarn = console.warn;

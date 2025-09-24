@@ -82,14 +82,16 @@ if (hasEnvLocal || hasEnv) {
   // Check if API key is configured (without exposing it)
   try {
     const envFile = fs.readFileSync(hasEnvLocal ? envLocalPath : envPath, 'utf8');
-    const hasApiKey = envFile.includes('EXPO_PUBLIC_GEMINI_API_KEY=') &&
-                     !envFile.includes('EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here');
+    const hasApiKey = envFile.includes('GEMINI_API_KEY=') &&
+                     !envFile.includes('GEMINI_API_KEY=your_gemini_api_key_here') &&
+                     !envFile.match(/GEMINI_API_KEY=\s*$/m);
 
     if (hasApiKey) {
-      console.log('✅ Gemini API key configured');
+      console.log('✅ Gemini API key configured in environment');
     } else {
-      console.log('⚠️  Gemini API key not configured (AI features will not work)');
-      console.log('    To configure: cp .env.example .env.local');
+      console.log('⚠️  Gemini API key not configured in environment');
+      console.log('    Users can add their API key through the app UI');
+      console.log('    Or pre-configure: cp .env.example .env.local');
       console.log('    Then add your API key from https://aistudio.google.com/app/apikey');
     }
   } catch (e) {
@@ -97,8 +99,8 @@ if (hasEnvLocal || hasEnv) {
   }
 } else {
   console.log('ℹ️  No .env.local file found');
-  console.log('    To enable AI features: cp .env.example .env.local');
-  console.log('    Then add your Gemini API key');
+  console.log('    API keys can be added through the app UI (BYOK model)');
+  console.log('    Or pre-configure: cp .env.example .env.local');
 }
 
 console.log('\n' + '='.repeat(50));

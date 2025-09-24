@@ -13,6 +13,7 @@ import { ChatScreen } from './src/screens/ChatScreen';
 import { ApiKeyModal } from './src/components/ApiKeyModal';
 import { Colors } from './src/utils/colors';
 import { geminiService } from './src/services/geminiService';
+import { env } from './src/config/env';
 
 const Stack = createStackNavigator();
 
@@ -55,10 +56,10 @@ export default function App() {
         const hasSeenWelcome = await AsyncStorage.getItem('has_seen_welcome');
         const storedApiKey = await AsyncStorage.getItem('gemini_api_key');
 
-        if (!hasSeenWelcome && !storedApiKey && !process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
+        if (!hasSeenWelcome && !storedApiKey && !env.apiKey) {
           // First time user without API key
           setShowApiKeyModal(true);
-        } else if (storedApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
+        } else if (storedApiKey || env.apiKey) {
           // Initialize service with existing key
           await geminiService.initialize();
         }

@@ -7,6 +7,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { env } from '../config/env';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -35,7 +36,7 @@ class GeminiService {
     // 1. Parameter (for UI input)
     // 2. Stored in AsyncStorage (user's saved key)
     // 3. Environment variable (for development only)
-    this.apiKey = apiKey || await this.getStoredApiKey() || process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+    this.apiKey = apiKey || await this.getStoredApiKey() || env.apiKey;
 
     if (!this.apiKey) {
       throw new Error('Gemini API key not found. Please provide your API key.');
@@ -44,8 +45,8 @@ class GeminiService {
     this.genAI = new GoogleGenAI({ apiKey: this.apiKey });
 
     // Set model names
-    this.imageModelName = process.env.EXPO_PUBLIC_GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview';
-    this.chatModelName = process.env.EXPO_PUBLIC_GEMINI_CHAT_MODEL || 'gemini-2.5-flash';
+    this.imageModelName = env.imageModel;
+    this.chatModelName = env.chatModel;
   }
 
   /**

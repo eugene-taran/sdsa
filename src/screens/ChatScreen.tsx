@@ -20,6 +20,7 @@ import { geminiService, QuestionnaireContext } from '../services/geminiService';
 import { useThemeColors } from '../utils/colors';
 import { ImageModal } from '../components/ImageModal';
 import { ContextHeader } from '../components/Chat/ContextHeader';
+import { env } from '../config/env';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -99,8 +100,8 @@ export const ChatScreen = () => {
       
       let errorText = "Unable to initialize AI assistant. ";
       const errorMessage = error instanceof Error ? error.message : '';
-      if (errorMessage.includes('API key') || !process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
-        errorText += "Please ensure your Gemini API key is configured. Set EXPO_PUBLIC_GEMINI_API_KEY in your .env.local file.";
+      if (errorMessage.includes('API key') || !env.apiKey) {
+        errorText += "Please ensure your Gemini API key is configured. Set GEMINI_API_KEY in your .env.local file.";
       } else {
         errorText += "Please check your configuration and try refreshing the page.";
       }

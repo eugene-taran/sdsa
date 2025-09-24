@@ -64,3 +64,5 @@ build/
 tmp/
 temp/
 CLAUDE.local.md
+
+.idea

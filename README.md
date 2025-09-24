@@ -5,7 +5,6 @@
 [![React Native](https://img.shields.io/badge/React%20Native-0.74-green.svg)](https://reactnative.dev/)
 [![Expo](https://img.shields.io/badge/Expo-51-black.svg)](https://expo.dev/)
 [![Kaggle](https://img.shields.io/badge/Kaggle-Banana%20Hackathon-20BEFF.svg)](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A cross-platform application (iOS, Android, Web) that provides personalized AI assistance for software developers through context-aware questionnaires.
 
@@ -13,7 +12,7 @@ A cross-platform application (iOS, Android, Web) that provides personalized AI a
 
 ## Overview
 
-SDSA revolutionizes development assistance by first understanding your specific context through interactive questionnaires. Instead of generic AI responses, you get tailored guidance based on your project's unique requirements, tech stack, and constraints.
+SDSA helps to get better answers from AI, based on your project's unique requirements, tech stack, and constraints.
 
 ### How It Works
 
@@ -82,7 +81,7 @@ For development, you can pre-configure your API key:
 cp .env.example .env.local
 
 # Add your API key (optional)
-echo "EXPO_PUBLIC_GEMINI_API_KEY=your_key_here" >> .env.local
+echo "GEMINI_API_KEY=AIzaSyCv4MzuaKkumhfcDdGe6W96XSc_PO-wA-o" >> .env.local
 
 # Start the app
 yarn start
@@ -113,7 +112,7 @@ npm install -g yarn
 # Install dependencies
 yarn install
 
-# Set up your Gemini API key
+# Set up your Gemini API key (optional - can also add via UI)
 cp .env.example .env.local
 # Edit .env.local and add your API key from https://aistudio.google.com/app/apikey
 
@@ -234,10 +233,6 @@ sdsa/
 - **On-device AI**: Rock (CallStack)
 - **Styling**: React Native StyleSheet
 
-## Contributing
-
-We welcome contributions! There are many ways to help:
-
 ### Contributing Questionnaires
 
 Questionnaires are stored in the `contexts/` folder. To add a new questionnaire:
@@ -261,7 +256,7 @@ All contributions must pass linting and tests
 
 ## Development Status
 
-🚧 **Current Phase**: MVP Development
+**Who knows**
 
 ### ✅ Completed
 
@@ -356,8 +351,6 @@ SDSA prioritizes user privacy and security through a BYOK approach:
 
 When deploying SDSA:
 - **Web/Vercel**: Users enter their own keys through the UI
-- **App Stores**: Each user provides their own key on first launch
-- **Enterprise**: Can pre-configure keys via MDM or environment variables
 
 ## Troubleshooting
 

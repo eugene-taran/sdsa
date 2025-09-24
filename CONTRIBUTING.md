@@ -122,27 +122,11 @@ yarn build
 4. **Good prompts** - Help the LLM provide valuable responses
 5. **Test your questionnaire** - Ensure it generates helpful recommendations
 
-## Community
-
-- **Discussions**: Use GitHub Discussions for questions
-- **Discord**: [Join our Discord](#) (coming soon)
-- **Code of Conduct**: Be respectful and inclusive
-
-## Recognition
-
-Contributors will be:
-- Listed in our README
-- Credited in questionnaire metadata
-- Thanked in release notes
-
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
 
 ## Questions?
 
-Feel free to open an issue or start a discussion. We're here to help!
-
+Feel free to open an issue or start a discussion
 ---
-
-**Thank you for making SDSA better for everyone!** 🚀

@@ -6,7 +6,7 @@
 
 1. **Add your Gemini API key to `.env.local`:**
 ```bash
-echo "EXPO_PUBLIC_GEMINI_API_KEY=your_actual_key_here" > .env.local
+echo "GEMINI_API_KEY=your_actual_key_here" > .env.local
 ```
 
 2. **Run the web version:**
@@ -32,13 +32,13 @@ yarn build:web
 vercel
 
 # During first deployment, add environment variable when prompted:
-# EXPO_PUBLIC_GEMINI_API_KEY = your_actual_key
+# GEMINI_API_KEY = your_actual_key
 ```
 
 3. **Or use Vercel Dashboard:**
    - Push code to GitHub
    - Import project at https://vercel.com/new
-   - Add environment variable: `EXPO_PUBLIC_GEMINI_API_KEY`
+   - Add environment variable: `GEMINI_API_KEY`
    - Deploy
 
 ## Option 2: Netlify
@@ -50,7 +50,7 @@ vercel
   publish = "web-build"
 
 [build.environment]
-  EXPO_PUBLIC_GEMINI_API_KEY = "set_in_netlify_dashboard"
+  GEMINI_API_KEY = "set_in_netlify_dashboard"
 ```
 
 2. **Deploy:**
@@ -64,7 +64,7 @@ netlify deploy --prod
 
 3. **Add API key in Netlify Dashboard:**
    - Go to Site settings → Environment variables
-   - Add `EXPO_PUBLIC_GEMINI_API_KEY`
+   - Add `GEMINI_API_KEY`
 
 ## Option 3: GitHub Pages (Public Repo Only)
 
@@ -95,7 +95,7 @@ jobs:
       - name: Build
         run: yarn build:web
         env:
-          EXPO_PUBLIC_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -148,7 +148,7 @@ if (!geminiService.isInitialized() && Platform.OS === 'web') {
 
 ### Quick & Dirty (Demo/MVP):
 
-For quick demos, using `EXPO_PUBLIC_GEMINI_API_KEY` in Vercel/Netlify is fine, but:
+For quick demos, using `GEMINI_API_KEY` in Vercel/Netlify is fine, but:
 - Set daily spending limits on your API key
 - Monitor usage in Google Cloud Console
 - Rotate keys regularly
@@ -158,7 +158,7 @@ For quick demos, using `EXPO_PUBLIC_GEMINI_API_KEY` in Vercel/Netlify is fine, b
 ### Quick Vercel Deploy:
 ```bash
 # One-line deploy with environment variable
-EXPO_PUBLIC_GEMINI_API_KEY=your_key yarn build:web && vercel --prod
+GEMINI_API_KEY=your_key yarn build:web && vercel --prod
 ```
 
 ### Quick Netlify Deploy:
@@ -220,7 +220,7 @@ yarn build:web
 npm i -g vercel
 
 # Build and deploy
-echo "EXPO_PUBLIC_GEMINI_API_KEY=your_key" > .env.local
+echo "GEMINI_API_KEY=your_key" > .env.local
 yarn build:web
 vercel --prod
 ```
