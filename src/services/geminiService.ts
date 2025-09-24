@@ -31,20 +31,21 @@ class GeminiService {
    * Initialize Gemini service with API key
    */
   async initialize(apiKey?: string): Promise<void> {
-    // Try to get API key from parameter, environment, or storage
-    this.apiKey = apiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || await this.getStoredApiKey();
-    
+    // Try to get API key from:
+    // 1. Parameter (for UI input)
+    // 2. Stored in AsyncStorage (user's saved key)
+    // 3. Environment variable (for development only)
+    this.apiKey = apiKey || await this.getStoredApiKey() || process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+
     if (!this.apiKey) {
-      throw new Error('Gemini API key not found. Please provide an API key.');
+      throw new Error('Gemini API key not found. Please provide your API key.');
     }
 
     this.genAI = new GoogleGenAI({ apiKey: this.apiKey });
-    
+
     // Set model names
     this.imageModelName = process.env.EXPO_PUBLIC_GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview';
     this.chatModelName = process.env.EXPO_PUBLIC_GEMINI_CHAT_MODEL || 'gemini-2.5-flash';
-
-    // Service initialized successfully
   }
 
   /**
@@ -59,12 +60,28 @@ class GeminiService {
   /**
    * Get stored API key
    */
-  private async getStoredApiKey(): Promise<string | null> {
+  async getStoredApiKey(): Promise<string | null> {
     try {
       return await AsyncStorage.getItem('gemini_api_key');
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Check if API key is configured
+   */
+  isConfigured(): boolean {
+    return this.apiKey !== null && this.apiKey !== undefined && this.apiKey !== '';
+  }
+
+  /**
+   * Clear stored API key
+   */
+  async clearApiKey(): Promise<void> {
+    await AsyncStorage.removeItem('gemini_api_key');
+    this.apiKey = null;
+    this.genAI = null;
   }
 
   /**
@@ -147,17 +164,13 @@ class GeminiService {
    * Maintains context from questionnaire and conversation history
    */
   async chatStream(
-    userInput: string, 
+    userInput: string,
     context?: QuestionnaireContext,
     onChunk?: (text: string) => void
   ): Promise<string> {
-    if (!this.genAI) {
-      throw new Error('Gemini service not initialized. Call initialize() first.');
-    }
-
     // Build the conversation prompt with context
     let systemContext = '';
-    
+
     if (context) {
       systemContext = `
 ${context.systemPrompt || 'You are a helpful AI assistant specializing in software development.'}
@@ -176,7 +189,7 @@ Based on this context, provide personalized, specific, and actionable advice.
     this.chatHistory.push({ role: 'user', content: userInput });
 
     // Build conversation history for context
-    const conversationContext = this.chatHistory.slice(-10).map(msg => 
+    const conversationContext = this.chatHistory.slice(-10).map(msg =>
       `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
     ).join('\n\n');
 
@@ -188,33 +201,37 @@ ${conversationContext}
 Please provide a helpful, specific response to the user's latest message.`;
 
     try {
+      if (!this.genAI) {
+        throw new Error('Gemini service not initialized. Please provide your API key.');
+      }
+
       // Use streaming API
       const stream = await this.genAI.models.generateContentStream({
         model: this.chatModelName,
         contents: fullPrompt,
       });
-      
+
       let fullResponse = '';
-      
+
       // Process stream chunks
       for await (const chunk of stream) {
         const chunkText = chunk.text || '';
         fullResponse += chunkText;
-        
+
         // Call the callback with the new chunk
         if (onChunk && chunkText) {
           onChunk(chunkText);
         }
       }
-      
+
       // If no response was generated, use fallback
       if (!fullResponse) {
         fullResponse = 'I apologize, but I had trouble generating a response. Please try again.';
       }
-      
+
       // Add assistant response to history
       this.chatHistory.push({ role: 'assistant', content: fullResponse });
-      
+
       return fullResponse;
     } catch (error) {
       console.error('Error in chat:', error);

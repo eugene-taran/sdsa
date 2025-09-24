@@ -35,6 +35,52 @@ SDSA revolutionizes development assistance by first understanding your specific 
 - Node.js 20.x (auto-installed via nvm/fnm/asdf)
 - Yarn 1.22+ package manager
 - iOS Simulator (Mac only) or Android Studio for mobile testing
+- Gemini API Key (free tier available)
+
+### API Key Setup
+
+SDSA uses a **BYOK (Bring Your Own Key)** model for maximum security and flexibility.
+
+#### Option 1: In-App Setup (Recommended)
+
+1. **Launch the app**:
+   ```bash
+   yarn start
+   ```
+
+2. **On first launch**, you'll see a welcome screen asking for your API key
+
+3. **Get your free API key**:
+   - Click "Get your free API key" link in the app
+   - Or visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Create a new key (free tier available)
+
+4. **Enter your key** in the app and click "Save & Continue"
+
+Your API key is stored securely on your device using AsyncStorage and never sent to any servers.
+
+#### Option 2: Pre-configure for Development
+
+For development, you can pre-configure your API key:
+
+```bash
+# Copy the example environment file
+cp .env.example .env.local
+
+# Add your API key (optional)
+echo "EXPO_PUBLIC_GEMINI_API_KEY=your_key_here" >> .env.local
+
+# Start the app
+yarn start
+```
+
+> **🔒 Security**: This is a BYOK application where:
+> - Each user provides their own API key
+> - Keys are stored locally on the device
+> - No keys are ever sent to our servers
+> - Perfect for open-source and community use
+
+> **Note**: Free tier includes 15 requests/minute and 1M tokens/month - plenty for development and personal use.
 
 ### Quick Start
 
@@ -52,6 +98,10 @@ npm install -g yarn
 
 # Install dependencies
 yarn install
+
+# Set up your Gemini API key
+cp .env.example .env.local
+# Edit .env.local and add your API key from https://aistudio.google.com/app/apikey
 
 # Start development server
 yarn start
@@ -270,7 +320,57 @@ This project is configured to work on clean CI environments:
 - **EAS Build**: Cloud builds for iOS and Android without local setup
 - **GitHub Actions Ready**: CI workflow included (currently disabled, rename `.github/workflows/ci.yml.disabled` to enable)
 
+## Security & Privacy
+
+### BYOK (Bring Your Own Key) Model
+
+SDSA prioritizes user privacy and security through a BYOK approach:
+
+- **🔐 Your Key, Your Control**: Each user provides their own Gemini API key
+- **📱 Local Storage Only**: Keys are stored securely on your device using AsyncStorage
+- **🚫 No Server Transmission**: Your API key never leaves your device
+- **✅ Open Source Transparency**: All code is open for review
+
+### Why BYOK?
+
+1. **Maximum Privacy**: Your API usage and data stay between you and Google
+2. **No Middleman**: Direct communication with Gemini API
+3. **Cost Control**: You manage your own API usage and billing
+4. **Trust**: No need to trust third-party servers with your keys
+
+### For Deployment
+
+When deploying SDSA:
+- **Web/Vercel**: Users enter their own keys through the UI
+- **App Stores**: Each user provides their own key on first launch
+- **Enterprise**: Can pre-configure keys via MDM or environment variables
+
 ## Troubleshooting
+
+### Gemini API Key Issues
+
+If AI features are not working:
+
+1. **Verify API key is set**:
+   ```bash
+   yarn verify  # Check if API key is configured
+   ```
+
+2. **Check environment file**:
+   ```bash
+   # Ensure .env.local exists and contains your key
+   cat .env.local | grep GEMINI_API_KEY
+   ```
+
+3. **Restart Metro bundler**:
+   ```bash
+   # Clear cache and restart
+   npx expo start -c
+   ```
+
+4. **API key limits**:
+   - Free tier: 15 requests/minute, 1M tokens/month
+   - If you hit limits, wait or upgrade your plan
 
 ### Metro bundler issues
 
@@ -288,7 +388,7 @@ Ensure Android Studio and Android SDK are properly configured.
 
 ## License
 
-Private repository - see LICENSE file for details.
+MIT - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
