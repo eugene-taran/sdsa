@@ -14,9 +14,8 @@ SDSA is a cross-platform application (iOS, Android, Web) that provides guided le
 
 ## Repository Structure
 
-- **This repo (private):** `https://github.com/eugene-taran/sdsa` - Application source code
-- **Contexts repo (public):** `https://github.com/eugene-taran/sdsa.team` - Questionnaires and categories
-- **Domain:** `sdsa.team`
+- **This repo:** `https://github.com/eugene-taran/sdsa` - Complete application with bundled questionnaires
+- **Domain:** `sdsa.team` (future landing page)
 
 ## Technical Stack
 

@@ -1,18 +1,32 @@
 # SDSA - Software Development Smart Assist
 
-A mobile application that provides guided learning journeys for software developers through interactive questionnaires and on-device AI assistance.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue.svg)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.74-green.svg)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-51-black.svg)](https://expo.dev/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+A cross-platform application (iOS, Android, Web) that provides personalized AI assistance for software developers through context-aware questionnaires.
 
 ## Overview
 
-SDSA uses context-gathering questionnaires organized in categories to understand users' specific situations before providing personalized AI-powered recommendations. Unlike traditional coding assistants, it builds context through targeted questions before offering guidance.
+SDSA revolutionizes development assistance by first understanding your specific context through interactive questionnaires. Instead of generic AI responses, you get tailored guidance based on your project's unique requirements, tech stack, and constraints.
+
+### How It Works
+
+1. **Browse Categories**: Explore questionnaires organized by topics (CI/CD, Testing, Architecture, etc.)
+2. **Answer Questions**: Provide context about your specific situation
+3. **Get Recommendations**: Receive personalized AI-generated guidance
+4. **Chat with Context**: Continue the conversation with full awareness of your answers
 
 ## Features
 
-- 🚀 **Interactive Questionnaires**: Answer targeted questions to build context
-- 🤖 **On-Device AI**: Privacy-preserving assistance with offline capabilities
-- 📚 **Community-Driven Content**: Open-source questionnaire repository
-- 💬 **Contextual Chat**: AI chat that understands your entire learning journey
-- 🔒 **Privacy-First**: Free tier runs entirely on-device
+- 🎯 **Context-Aware**: Questionnaires gather specific requirements before providing advice
+- 💬 **Personalized Chat**: AI conversations tailored to your project's context
+- 📱 **Multi-Platform**: Works on iOS, Android, and Web from a single codebase
+- 🌐 **Offline Ready**: Bundled questionnaires work without internet
+- 🚀 **Gemini Powered**: Uses Google's Gemini AI for intelligent responses
+- 👥 **Open Source**: Community-driven questionnaires and development
 
 ## Getting Started
 
@@ -26,7 +40,7 @@ SDSA uses context-gathering questionnaires organized in categories to understand
 
 ```bash
 # Clone repository
-git clone https://github.com/eugene-taran/sdsa
+git clone https://github.com/eugene-taran/sdsa.git
 cd sdsa
 
 # Install correct Node version (if using nvm)
@@ -158,16 +172,28 @@ sdsa/
 
 ## Contributing
 
-We welcome contributions! The questionnaires are open source and live at:
+We welcome contributions! There are many ways to help:
 
-- Repository: https://github.com/eugene-taran/sdsa.team
-- Domain: https://sdsa.team
+### Contributing Questionnaires
 
-To contribute questionnaires:
+Questionnaires are stored in the `contexts/` folder. To add a new questionnaire:
 
-1. Fork the sdsa.team repository
-2. Add your questionnaire in JSON format to the appropriate category
-3. Submit a PR with your contribution
+1. Fork this repository
+2. Create your questionnaire in `contexts/categories/[category]/your-questionnaire.json`
+3. Follow the format in existing questionnaires
+4. Submit a Pull Request
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+### Contributing Code
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Ensure tests pass (`yarn test`)
+5. Submit a Pull Request
+
+All contributions must pass linting and tests
 
 ## Development Status
 

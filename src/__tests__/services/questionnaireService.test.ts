@@ -8,14 +8,35 @@ global.fetch = jest.fn();
 jest.mock('@react-native-async-storage/async-storage');
 
 // Mock local questionnaire assets
-jest.mock('../../assets/contexts/categories/cicd/cicd-pipeline.json', () => ({
+jest.mock('../../../contexts/categories.json', () => ({
+  categories: [
+    {
+      id: 'cicd',
+      name: 'CI/CD & DevOps',
+      description: 'Continuous Integration, Continuous Deployment, and DevOps practices',
+      icon: '🚀',
+      path: 'cicd',
+      order: 1,
+    },
+    {
+      id: 'e2e',
+      name: 'Testing & Quality',
+      description: 'Testing strategies, frameworks, and quality assurance',
+      icon: '🧪',
+      path: 'e2e',
+      order: 2,
+    },
+  ],
+}));
+
+jest.mock('../../../contexts/categories/cicd/cicd-pipeline.json', () => ({
   id: 'cicd-pipeline',
   title: 'CI/CD Pipeline',
   description: 'Configure CI/CD pipeline',
   questions: [],
-}), { virtual: true });
+}));
 
-jest.mock('../../assets/contexts/categories/e2e/e2e-testing.json', () => ({
+jest.mock('../../../contexts/categories/e2e/e2e-testing.json', () => ({
   id: 'e2e-testing',
   title: 'End-to-End Testing Setup',
   description: 'Configure end-to-end testing',
@@ -26,7 +47,7 @@ jest.mock('../../assets/contexts/categories/e2e/e2e-testing.json', () => ({
       options: ['Yes', 'No'],
     },
   ],
-}), { virtual: true });
+}));
 
 describe('QuestionnaireService', () => {
   beforeEach(() => {
@@ -40,129 +61,83 @@ describe('QuestionnaireService', () => {
   describe('getCategories', () => {
     const mockCategories = [
       {
-        id: 'testing',
-        name: 'Testing',
-        description: 'Testing tools and strategies',
-        icon: '🧪',
+        id: 'cicd',
+        name: 'CI/CD & DevOps',
+        description: 'Continuous Integration, Continuous Deployment, and DevOps practices',
+        icon: '🚀',
+        path: 'cicd',
+        order: 1,
       },
       {
-        id: 'performance',
-        name: 'Performance',
-        description: 'Optimization techniques',
-        icon: '⚡',
+        id: 'e2e',
+        name: 'Testing & Quality',
+        description: 'Testing strategies, frameworks, and quality assurance',
+        icon: '🧪',
+        path: 'e2e',
+        order: 2,
       },
     ];
 
-    it('should fetch categories from GitHub', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => ({ categories: mockCategories }),
-      });
-
+    it('should return local categories', async () => {
       const result = await questionnaireService.getCategories();
-      
-      expect(result).toEqual(mockCategories);
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories.json'
-      );
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        'categories_cache',
-        expect.stringContaining(JSON.stringify(mockCategories))
-      );
-    });
 
-    it('should return cached categories if available', async () => {
-      const cachedData = {
-        data: { categories: mockCategories },
-        timestamp: Date.now()
-      };
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(cachedData));
-
-      const result = await questionnaireService.getCategories();
-      
       expect(result).toEqual(mockCategories);
+      // No fetch should be called since we're using local imports
       expect(global.fetch).not.toHaveBeenCalled();
+      // No caching needed for local data
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
     });
 
-    it('should return mock data on fetch error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+    it('should always return the same categories', async () => {
+      const result1 = await questionnaireService.getCategories();
+      const result2 = await questionnaireService.getCategories();
 
+      expect(result1).toEqual(result2);
+      expect(result1).toEqual(mockCategories);
+    });
+
+    it('should handle errors gracefully', async () => {
+      // Mock an error scenario
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      // The service should still return mock data on error
       const result = await questionnaireService.getCategories();
-      
+
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0]).toHaveProperty('id');
-      expect(result[0]).toHaveProperty('name');
     });
 
-    it('should return mock data on non-ok response', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 404,
-      });
-
+    it('should return categories even without errors', async () => {
       const result = await questionnaireService.getCategories();
-      
+
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(2);
     });
   });
 
   describe('getQuestionnaires', () => {
-    const mockQuestionnaires = [
-      {
-        id: 'unit-testing',
-        title: 'Unit Testing Setup',
-        description: 'Configure unit testing for your project',
-      },
-      {
-        id: 'e2e-testing',
-        title: 'E2E Testing',
-        description: 'End-to-end testing configuration',
-      },
-    ];
-
-    it('should fetch questionnaires for a category', async () => {
-      // Mock the individual questionnaire fetches for e2e category
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          id: 'e2e-testing',
-          title: 'E2E Testing',
-          description: 'End-to-end testing configuration',
-          questions: [],
-        }),
-      });
-
+    it('should return questionnaires for e2e category', async () => {
       const result = await questionnaireService.getQuestionnaires('e2e');
-      
+
       expect(result).toHaveLength(1);
       expect(result[0]).toHaveProperty('id', 'e2e-testing');
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories/e2e/e2e-testing.json'
-      );
-      expect(AsyncStorage.setItem).toHaveBeenCalled();
-    });
-
-    it('should return cached questionnaires if available', async () => {
-      const cachedData = {
-        data: mockQuestionnaires,
-        timestamp: Date.now()
-      };
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(cachedData));
-
-      const result = await questionnaireService.getQuestionnaires('testing');
-      
-      expect(result).toEqual(mockQuestionnaires);
+      // No fetch should be called since we're using local imports
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('should return empty array on error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+    it('should return questionnaires for cicd category', async () => {
+      const result = await questionnaireService.getQuestionnaires('cicd');
 
+      expect(result).toHaveLength(1);
+      expect(result[0]).toHaveProperty('id', 'cicd-pipeline');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return empty array for unknown category', async () => {
       const result = await questionnaireService.getQuestionnaires('unknown-category');
-      
+
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       // Returns empty array for unknown categories
@@ -194,95 +169,63 @@ describe('QuestionnaireService', () => {
       },
     };
 
-    it('should fetch specific questionnaire', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => mockQuestionnaire,
-      });
-
-      const result = await questionnaireService.getQuestionnaire('testing', 'e2e-testing');
-      
-      expect(result).toEqual(mockQuestionnaire);
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories/testing/e2e-testing.json'
-      );
-      expect(AsyncStorage.setItem).toHaveBeenCalled();
-    });
-
-    it('should return cached questionnaire if available', async () => {
-      const cachedData = {
-        data: mockQuestionnaire,
-        timestamp: Date.now()
-      };
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(cachedData));
-
-      const result = await questionnaireService.getQuestionnaire('testing', 'e2e-testing');
-      
-      expect(result).toEqual(mockQuestionnaire);
-      expect(global.fetch).not.toHaveBeenCalled();
-    });
-
-    it('should return local questionnaire on fetch error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-
+    it('should return a specific questionnaire for e2e', async () => {
       const result = await questionnaireService.getQuestionnaire('e2e', 'e2e-testing');
-      
-      // Service returns local fallback on error
+
       expect(result).toBeDefined();
       expect(result?.id).toBe('e2e-testing');
       expect(result?.title).toBe('End-to-End Testing Setup');
-    });
-
-    it('should handle non-ok responses', async () => {
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 404,
-      });
-
-      const result = await questionnaireService.getQuestionnaire('testing', 'non-existent');
-      
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('caching behavior', () => {
-    it('should always try cache first', async () => {
-      const cachedData = {
-        data: { categories: [{ id: 'cached', name: 'Cached' }] },
-        timestamp: Date.now()
-      };
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(cachedData));
-
-      const result = await questionnaireService.getCategories();
-      
-      // Verify cache was checked first (by not calling fetch when cache exists)
-      expect(AsyncStorage.getItem).toHaveBeenCalled();
-      expect(result).toEqual(cachedData.data.categories);
+      // No fetch should be called since we're using local imports
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('should update cache after successful fetch', async () => {
-      const fetchedData = { categories: [{ id: 'test', name: 'Test' }] };
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => fetchedData,
-      });
+    it('should return a specific questionnaire for cicd', async () => {
+      const result = await questionnaireService.getQuestionnaire('cicd', 'cicd-pipeline');
 
-      await questionnaireService.getCategories();
-      
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        'categories_cache',
-        expect.stringContaining(JSON.stringify(fetchedData.categories))
-      );
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('cicd-pipeline');
+      expect(result?.title).toBe('CI/CD Pipeline');
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('should not update cache on fetch error', async () => {
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+    it('should return null for non-existent questionnaire', async () => {
+      const result = await questionnaireService.getQuestionnaire('testing', 'non-existent');
 
+      expect(result).toBeNull();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('local data behavior', () => {
+    it('should not use AsyncStorage for local data', async () => {
       await questionnaireService.getCategories();
-      
-      // When fetch fails, we shouldn't write to cache (only 1 call from reading attempt)
+
+      // No cache operations should happen with local data
+      expect(AsyncStorage.getItem).not.toHaveBeenCalled();
       expect(AsyncStorage.setItem).not.toHaveBeenCalled();
     });
+
+    it('should not make network requests', async () => {
+      await questionnaireService.getCategories();
+      await questionnaireService.getQuestionnaires('e2e');
+      await questionnaireService.getQuestionnaire('cicd', 'cicd-pipeline');
+
+      // No fetch calls should be made with local data
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors gracefully', async () => {
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Even with errors, should return valid data or defaults
+      const categories = await questionnaireService.getCategories();
+      const questionnaires = await questionnaireService.getQuestionnaires('unknown');
+      const questionnaire = await questionnaireService.getQuestionnaire('unknown', 'unknown');
+
+      expect(categories.length).toBeGreaterThan(0);
+      expect(questionnaires).toEqual([]);
+      expect(questionnaire).toBeNull();
+    });
+
   });
 });

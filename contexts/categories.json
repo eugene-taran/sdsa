@@ -1,0 +1,20 @@
+{
+  "categories": [
+    {
+      "id": "cicd",
+      "name": "CI/CD & DevOps",
+      "description": "Continuous Integration, Continuous Deployment, and DevOps practices",
+      "icon": "🚀",
+      "path": "cicd",
+      "order": 1
+    },
+    {
+      "id": "e2e",
+      "name": "Testing & Quality",
+      "description": "Testing strategies, frameworks, and quality assurance",
+      "icon": "🧪",
+      "path": "e2e",
+      "order": 2
+    }
+  ]
+}

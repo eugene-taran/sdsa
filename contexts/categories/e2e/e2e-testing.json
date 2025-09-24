@@ -1,0 +1,142 @@
+{
+  "id": "e2e-testing",
+  "title": "End-to-End Testing Setup",
+  "description": "Complete guide for setting up E2E testing in your project",
+  "questions": [
+    {
+      "type": "radio",
+      "label": "Do you have an existing test system in place?",
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Which testing framework are you currently using or planning to use?",
+      "options": [
+        { "value": "cypress", "label": "Cypress" },
+        { "value": "playwright", "label": "Playwright" },
+        { "value": "selenium", "label": "Selenium WebDriver" },
+        { "value": "webdriverio", "label": "WebdriverIO" },
+        { "value": "puppeteer", "label": "Puppeteer" },
+        { "value": "testcafe", "label": "TestCafe" },
+        { 
+          "value": "other", 
+          "label": "Other", 
+          "hasTextInput": true,
+          "textInputPlaceholder": "Please specify..."
+        },
+        { "value": "not-sure", "label": "Not sure yet" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "What's your primary application type?",
+      "options": [
+        { "value": "web", "label": "Web Application" },
+        { "value": "mobile", "label": "Mobile Application" },
+        { "value": "desktop", "label": "Desktop Application" },
+        { "value": "hybrid", "label": "Hybrid/PWA" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "What frontend framework are you using?",
+      "options": [
+        { "value": "react", "label": "React" },
+        { "value": "vue", "label": "Vue.js" },
+        { "value": "angular", "label": "Angular" },
+        { "value": "nextjs", "label": "Next.js" },
+        { "value": "nuxt", "label": "Nuxt" },
+        { "value": "svelte", "label": "Svelte/SvelteKit" },
+        { "value": "vanilla", "label": "Vanilla JavaScript" },
+        { 
+          "value": "other", 
+          "label": "Other", 
+          "hasTextInput": true,
+          "textInputPlaceholder": "Please specify..."
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "Which browsers do you need to test?",
+      "options": [
+        { "value": "chrome", "label": "Chrome" },
+        { "value": "firefox", "label": "Firefox" },
+        { "value": "safari", "label": "Safari" },
+        { "value": "edge", "label": "Edge" },
+        { "value": "mobile-chrome", "label": "Mobile Chrome" },
+        { "value": "mobile-safari", "label": "Mobile Safari" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "label": "What types of scenarios do you need to test?",
+      "options": [
+        { "value": "user-flows", "label": "Critical user flows" },
+        { "value": "auth", "label": "Authentication/Authorization" },
+        { "value": "forms", "label": "Form submissions" },
+        { "value": "payments", "label": "Payment processing" },
+        { "value": "api", "label": "API interactions" },
+        { "value": "file-upload", "label": "File uploads/downloads" },
+        { "value": "real-time", "label": "Real-time features (websockets)" },
+        { "value": "accessibility", "label": "Accessibility compliance" },
+        { "value": "visual", "label": "Visual regression" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Do you run or plan to run tests in parallel?",
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "planning", "label": "Planning to implement" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "Do you run tests in CI/CD pipeline?",
+      "options": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" },
+        { "value": "planning", "label": "Planning to set up" }
+      ]
+    },
+    {
+      "type": "radio",
+      "label": "How do you manage test data?",
+      "options": [
+        { "value": "fixtures", "label": "Static fixtures/mocks" },
+        { "value": "database", "label": "Test database" },
+        { "value": "api-mocks", "label": "API mocking" },
+        { "value": "production-like", "label": "Production-like data" },
+        { "value": "not-decided", "label": "Not decided yet" }
+      ]
+    },
+    {
+      "type": "text",
+      "label": "How many people will be writing/maintaining tests?",
+      "placeholder": "e.g., 3"
+    },
+    {
+      "type": "textarea",
+      "label": "What are your current testing challenges or pain points?",
+      "placeholder": "e.g., Flaky tests, slow execution, difficult maintenance, lack of coverage..."
+    },
+    {
+      "type": "textarea",
+      "label": "Any specific requirements or constraints?",
+      "placeholder": "e.g., Must test on specific browser versions, need to test behind VPN, compliance requirements..."
+    }
+  ],
+  "llmConfig": {
+    "systemPrompt": "You are an expert in end-to-end testing and test automation. Based on the user's answers, provide specific, actionable recommendations for setting up or improving their E2E testing strategy. Include code examples, configuration snippets, and best practices relevant to their chosen framework and application type. Focus on solving their specific challenges and requirements. Provide practical tips for test stability, performance, and maintainability.",
+    "temperature": 0.7,
+    "maxTokens": 2000
+  },
+  "metadata": {
+    "author": "eugene-taran"
+  }
+}
