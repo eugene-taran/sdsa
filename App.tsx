@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { CategoryScreen } from './src/screens/CategoryScreen';
 import { QuestionnaireScreen } from './src/screens/QuestionnaireScreen';
-import { ResourceScreen } from './src/screens/ResourceScreen';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { Colors } from './src/utils/colors';
 
@@ -106,18 +105,6 @@ export default function App() {
           component={QuestionnaireScreen}
           options={{
             title: 'Questionnaire',
-            headerStyle: {
-              backgroundColor: colors.card,
-            },
-            headerTintColor: colors.text,
-            headerRight: GitHubButton,
-          }}
-        />
-        <Stack.Screen
-          name="Resource"
-          component={ResourceScreen}
-          options={{
-            title: 'Resource',
             headerStyle: {
               backgroundColor: colors.card,
             },
