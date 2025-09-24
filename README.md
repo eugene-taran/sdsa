@@ -4,9 +4,12 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue.svg)](https://www.typescriptlang.org/)
 [![React Native](https://img.shields.io/badge/React%20Native-0.74-green.svg)](https://reactnative.dev/)
 [![Expo](https://img.shields.io/badge/Expo-51-black.svg)](https://expo.dev/)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Banana%20Hackathon-20BEFF.svg)](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A cross-platform application (iOS, Android, Web) that provides personalized AI assistance for software developers through context-aware questionnaires.
+
+🏆 **[Kaggle Banana Hackathon Submission](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist)** - Building AI-powered developer tools with Gemini
 
 ## Overview
 
@@ -19,6 +22,16 @@ SDSA revolutionizes development assistance by first understanding your specific 
 3. **Get Recommendations**: Receive personalized AI-generated guidance
 4. **Chat with Context**: Continue the conversation with full awareness of your answers
 
+## 🏆 Kaggle Banana Hackathon
+
+This project is a submission to the [Kaggle Banana Hackathon](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist), showcasing innovative use of Google's Gemini AI for developer productivity.
+
+### Hackathon Highlights
+- **Challenge**: Build creative AI applications using Gemini
+- **Our Solution**: Context-aware developer assistant that understands before it assists
+- **Key Innovation**: Questionnaire-first approach for personalized AI guidance
+- **Tech Stack**: React Native + Expo + Gemini AI
+
 ## Features
 
 - 🎯 **Context-Aware**: Questionnaires gather specific requirements before providing advice
@@ -27,6 +40,7 @@ SDSA revolutionizes development assistance by first understanding your specific 
 - 🌐 **Offline Ready**: Bundled questionnaires work without internet
 - 🚀 **Gemini Powered**: Uses Google's Gemini AI for intelligent responses
 - 👥 **Open Source**: Community-driven questionnaires and development
+- 🔐 **BYOK Model**: Bring Your Own Key for maximum privacy and control
 
 ## Getting Started
 
@@ -386,6 +400,43 @@ Ensure you have the latest Xcode and iOS simulators installed.
 
 Ensure Android Studio and Android SDK are properly configured.
 
+## Contributing
+
+We welcome contributions! Whether it's new questionnaires, features, or bug fixes.
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create your feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### Contributing Questionnaires
+
+Questionnaires are the heart of SDSA. To add new ones:
+1. Create a JSON file in the appropriate category folder
+2. Follow the existing questionnaire structure
+3. Test your questionnaire locally
+4. Submit a PR with your contribution
+
+## Hackathon
+
+🏆 This project was created for the [Kaggle Banana Hackathon](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist).
+
+### Why SDSA?
+
+- **Problem**: Generic AI assistants lack context about specific development situations
+- **Solution**: Context-gathering questionnaires that understand before assisting
+- **Impact**: More relevant, actionable advice for developers
+
+### Technical Innovation
+
+- **BYOK Model**: Users control their own API keys
+- **Cross-Platform**: One codebase for iOS, Android, and Web
+- **Offline-First**: Questionnaires bundled for instant access
+- **Privacy-First**: No data leaves the user's device
+
 ## License
 
 MIT - see [LICENSE](LICENSE) file for details.
@@ -393,3 +444,9 @@ MIT - see [LICENSE](LICENSE) file for details.
 ## Support
 
 For questions or issues, please open an issue in this repository.
+
+## Acknowledgments
+
+- Google Gemini team for the amazing AI models
+- Kaggle for hosting the Banana Hackathon
+- The open-source community for inspiration and support
