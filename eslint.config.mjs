@@ -44,19 +44,19 @@ export default [
     rules: {
       // TypeScript rules
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { 
+      '@typescript-eslint/no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_' 
+        varsIgnorePattern: '^_'
       }],
-      
+
       // React rules
       'react/react-in-jsx-scope': 'off', // Not needed in React Native
       'react/prop-types': 'off', // We use TypeScript
-      
+
       // React Hooks rules
       'react-hooks/exhaustive-deps': 'warn',
       'react-hooks/rules-of-hooks': 'error',
-      
+
       // General rules
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-unused-vars': 'off', // Use TypeScript's version
@@ -81,6 +81,7 @@ export default [
       'babel.config.js',
       'metro.config.js',
       'scripts/**',
+      'coverage/**',
     ],
   },
 ];

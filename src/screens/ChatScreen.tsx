@@ -215,7 +215,7 @@ export const ChatScreen = () => {
     // Convert answers to array format expected by Gemini
     const formattedAnswers = Object.entries(answers).map(([question, answer]) => ({
       question,
-      value: answer,
+      value: String(answer), // Ensure value is always a string
     }));
     
     return {

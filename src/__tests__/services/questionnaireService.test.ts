@@ -146,29 +146,6 @@ describe('QuestionnaireService', () => {
   });
 
   describe('getQuestionnaire', () => {
-    const mockQuestionnaire = {
-      id: 'e2e-testing',
-      title: 'E2E Testing Setup',
-      description: 'Configure end-to-end testing',
-      questions: [
-        {
-          type: 'radio',
-          label: 'Do you have existing tests?',
-          options: ['Yes', 'No'],
-        },
-        {
-          type: 'text',
-          label: 'What framework are you using?',
-          placeholder: 'e.g., Jest, Cypress',
-        },
-      ],
-      llmConfig: {
-        systemPrompt: 'You are a testing expert',
-        temperature: 0.7,
-        maxTokens: 1500,
-      },
-    };
-
     it('should return a specific questionnaire for e2e', async () => {
       const result = await questionnaireService.getQuestionnaire('e2e', 'e2e-testing');
 

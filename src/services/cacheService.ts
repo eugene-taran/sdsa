@@ -1,5 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { JourneyState, KnowledgeBlock } from '../types/knowledge';
+
+export interface JourneyState {
+  answers: Record<string, string>;
+  currentQuestionIndex: number;
+  completed: boolean;
+}
+
+export interface KnowledgeBlock {
+  id: string;
+  title: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+}
 
 const CACHE_PREFIX = '@sdsa_cache_';
 const JOURNEY_KEY = '@sdsa_journey';

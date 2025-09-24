@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { QuestionnaireState, ContextValue } from '../types/knowledge';
+
+export type ContextValue = string | number | boolean | string[] | Record<string, unknown>;
+
+export interface QuestionnaireState {
+  currentBlockId: string;
+  questionnaireHistory: string[];
+  answers: Record<string, string>;
+  context: Record<string, ContextValue>;
+  resources: string[];
+}
 
 interface QuestionnaireStore extends QuestionnaireState {
   // Actions

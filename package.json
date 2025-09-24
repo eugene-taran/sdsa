@@ -22,7 +22,7 @@
     "dev-client:android": "eas build --profile development --platform android",
     "install:ci": "yarn install --frozen-lockfile",
     "install:dev": "yarn install",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
