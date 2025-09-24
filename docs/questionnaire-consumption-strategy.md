@@ -7,7 +7,7 @@ The SDSA app consumes questionnaire releases from the `sdsa.team` repository. Th
 ## Content Source
 
 ### Remote Repository
-- **Source**: `https://github.com/eugene-taran/sdsa.team`
+- **Source**: `https://github.com/eugene-taran/sdsa`
 - **Releases**: Published automatically when content changes
 - **Manifest URL**: `https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/manifest.json`
 - **Categories URL**: `https://raw.githubusercontent.com/eugene-taran/sdsa.team/main/contexts/categories.json`

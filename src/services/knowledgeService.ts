@@ -2,7 +2,7 @@ import { KnowledgeBlock } from '../types/knowledge';
 import { cacheService } from './cacheService';
 import * as YAML from 'yaml';
 
-const KNOWLEDGE_BASE_URL = 'https://raw.githubusercontent.com/eugene-taran/sdsa.team/main';
+const KNOWLEDGE_BASE_URL = 'https://raw.githubusercontent.com/eugene-taran/sdsa/main';
 
 export class KnowledgeService {
   private memoryCache: Map<string, KnowledgeBlock> = new Map();

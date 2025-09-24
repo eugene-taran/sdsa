@@ -19,7 +19,7 @@ export default function App() {
   const colors = Colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
   const handleGitHubPress = () => {
-    Linking.openURL('https://github.com/eugene-taran/sdsa.team');
+    Linking.openURL('https://github.com/eugene-taran/sdsa');
   };
 
   const GitHubButton = () => (
