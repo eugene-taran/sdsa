@@ -222,6 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    pointerEvents: 'box-none',
   },
   modalContent: {
     width: '90%',
@@ -236,6 +237,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    pointerEvents: 'auto',
   },
   title: {
     fontSize: 24,

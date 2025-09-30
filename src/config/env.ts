@@ -15,11 +15,16 @@ export const getEnvConfig = () => {
 
   // Debug logging
   if (__DEV__) {
+    // eslint-disable-next-line no-console
     console.log('Constants object keys:', Object.keys(Constants));
+    // eslint-disable-next-line no-console
     console.log('Constants.expoConfig:', Constants.expoConfig ? 'Available' : 'Not available');
+    // eslint-disable-next-line no-console
     console.log('Constants.manifest:', Constants.manifest ? 'Available' : 'Not available');
+    // eslint-disable-next-line no-console
     console.log('Extra config:', extra);
     if (extra.geminiApiKey) {
+      // eslint-disable-next-line no-console
       console.log('API Key from extra: Yes');
     }
   }
