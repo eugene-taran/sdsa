@@ -6,6 +6,8 @@
 [![Expo](https://img.shields.io/badge/Expo-51-black.svg)](https://expo.dev/)
 [![Kaggle](https://img.shields.io/badge/Kaggle-Banana%20Hackathon-20BEFF.svg)](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist)
 
+🌐 **[Live Demo](https://sdsa.deveugene.dev/)** - Try it now in your browser!
+
 A cross-platform application (iOS, Android, Web) that provides personalized AI assistance for software developers through context-aware questionnaires.
 
 🏆 **[Kaggle Banana Hackathon Submission](https://www.kaggle.com/competitions/banana/writeups/sdsa-software-development-smart-assist)** - Building AI-powered developer tools with Gemini
