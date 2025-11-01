@@ -78,14 +78,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
     if (hasExistingKey) {
       onClose();
     } else {
-      Alert.alert(
-        'Skip API Key?',
-        'Without an API key, AI features will not work. You can add it later in settings.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Skip', onPress: onClose },
-        ]
-      );
+      onClose();
     }
   };
 
