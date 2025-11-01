@@ -192,16 +192,16 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
             )}
 
             <TouchableOpacity
-              onPress={apiKey.trim() ? handleSave : handleSkip}
+              onPress={apiKey.trim() ? handleSave : (hasExistingKey ? onClose : handleSave)}
               style={[
                 styles.button,
                 styles.saveButton,
-                { backgroundColor: apiKey.trim() ? colors.primary : colors.card },
+                { backgroundColor: apiKey.trim() ? colors.primary : colors.disabled },
               ]}
-              disabled={loading}
+              disabled={loading || (!apiKey.trim() && !hasExistingKey)}
             >
               <Text style={[styles.buttonText, { color: apiKey.trim() ? '#FFFFFF' : colors.text }]}>
-                {loading ? 'Saving...' : apiKey.trim() ? 'Update Key' : hasExistingKey ? 'Close' : 'Skip'}
+                {loading ? 'Saving...' : apiKey.trim() ? 'Update Key' : hasExistingKey ? 'Close' : 'Save'}
               </Text>
             </TouchableOpacity>
           </View>
